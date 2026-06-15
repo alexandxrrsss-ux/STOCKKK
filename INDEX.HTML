@@ -2,8 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>HerreriaPRO · Sistema Completo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>HerreriaPRO</title>
     <script type="importmap">
         {
             "imports": {
@@ -13,138 +15,264 @@
         }
     </script>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
-        body{background:#1a1a1a;color:#e0e0e0;height:100vh;display:flex;overflow:hidden}
+        :root {
+            --bg: #1a1a1a;
+            --card: #252525;
+            --border: #333;
+            --orange: #f97316;
+            --text: #e0e0e0;
+            --text2: #888;
+            --danger: #ef4444;
+            --success: #10b981;
+            --font-sm: clamp(0.65rem, 1.5vw, 0.8rem);
+            --font-md: clamp(0.75rem, 1.8vw, 0.9rem);
+            --font-lg: clamp(0.9rem, 2.2vw, 1.2rem);
+            --font-xl: clamp(1.2rem, 3vw, 1.6rem);
+            --sidebar-w: 60px;
+            --topbar-h: 50px;
+        }
         
-        .sidebar{width:200px;background:#252525;padding:1rem;display:flex;flex-direction:column;gap:0.3rem;border-right:2px solid #333;flex-shrink:0}
-        .logo{font-size:1.3rem;font-weight:800;color:#f97316;text-align:center;margin-bottom:1rem}
-        .nav-item{padding:0.8rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:0.5rem;color:#999;font-size:0.85rem;transition:0.2s}
-        .nav-item:hover{background:#333;color:#f97316}
-        .nav-item.active{background:#f97316;color:#000;font-weight:700}
-        .nav-item i{font-style:normal;font-size:1.1rem}
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', system-ui, -apple-system, sans-serif}
+        body{
+            background:var(--bg);color:var(--text);height:100vh;height:100dvh;
+            display:flex;overflow:hidden;-webkit-tap-highlight-color:transparent;
+            touch-action:manipulation;
+        }
         
+        /* === BOTTOM NAV (MÓVIL) === */
+        .bottom-nav{
+            display:none;
+            position:fixed;bottom:0;left:0;right:0;background:#111;
+            border-top:2px solid var(--border);z-index:100;
+            padding:0.3rem 0 env(safe-area-inset-bottom, 0.5rem);
+        }
+        .bottom-nav-inner{display:flex;justify-content:space-around}
+        .bottom-nav .bn-item{
+            display:flex;flex-direction:column;align-items:center;gap:0.2rem;
+            padding:0.4rem;color:#999;cursor:pointer;font-size:0.6rem;
+            border-radius:8px;transition:0.2s;border:none;background:none;
+        }
+        .bottom-nav .bn-item.active{color:var(--orange);font-weight:700}
+        .bottom-nav .bn-item .bn-icon{font-size:1.3rem}
+        
+        /* === SIDEBAR (ESCRITORIO) === */
+        .sidebar{
+            width:var(--sidebar-w);background:#111;padding:0.8rem 0.3rem;
+            display:flex;flex-direction:column;gap:0.3rem;border-right:2px solid var(--border);
+            flex-shrink:0;align-items:center;transition:0.3s;
+        }
+        .logo{font-size:1rem;font-weight:800;color:var(--orange);text-align:center;margin-bottom:1rem;display:none}
+        .sidebar .nav-item{
+            padding:0.6rem;border-radius:10px;cursor:pointer;color:#999;
+            font-size:0.65rem;text-align:center;display:flex;flex-direction:column;
+            align-items:center;gap:0.2rem;transition:0.2s;width:100%;
+        }
+        .sidebar .nav-item .nav-icon{font-size:1.2rem}
+        .sidebar .nav-item.active{background:var(--orange);color:#000;font-weight:700}
+        .sidebar .nav-item:active{transform:scale(0.95)}
+        
+        /* === MAIN === */
         .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-        .topbar{background:#252525;padding:0.7rem 1.5rem;border-bottom:2px solid #333;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem}
-        .topbar h1{font-size:1.2rem;color:#f97316}
-        .topbar-right{display:flex;align-items:center;gap:0.8rem}
-        .status-dot{width:7px;height:7px;border-radius:50%}
-        .status-dot.on{background:#6ee7b7;box-shadow:0 0 5px #6ee7b7}
-        .status-dot.off{background:#ef4444}
-        .content{flex:1;overflow-y:auto;padding:1rem}
+        .topbar{
+            background:#111;padding:0 1rem;height:var(--topbar-h);
+            border-bottom:2px solid var(--border);display:flex;
+            justify-content:space-between;align-items:center;flex-shrink:0;
+        }
+        .topbar h1{font-size:var(--font-lg);color:var(--orange);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .topbar-right{display:flex;align-items:center;gap:0.5rem;flex-shrink:0}
+        .status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+        .status-dot.on{background:var(--success);box-shadow:0 0 5px var(--success)}
+        .status-dot.off{background:var(--danger)}
+        .content{flex:1;overflow-y:auto;overflow-x:hidden;padding:0.8rem;-webkit-overflow-scrolling:touch}
         
-        .page{display:none}
+        .page{display:none;animation:fadeIn 0.2s}
         .page.active{display:block}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         
-        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.8rem;margin-bottom:1.5rem}
-        .stat-card{background:#2a2a2a;border:1px solid #333;border-radius:12px;padding:1rem;text-align:center}
-        .stat-card .num{font-size:2rem;font-weight:800;color:#f97316}
-        .stat-card .lbl{font-size:0.7rem;color:#888;text-transform:uppercase;margin-top:0.3rem}
+        /* === CARDS === */
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:0.5rem;margin-bottom:1rem}
+        .stat-card{
+            background:var(--card);border:1px solid var(--border);border-radius:10px;
+            padding:0.8rem;text-align:center;transition:0.2s;
+        }
+        .stat-card:active{transform:scale(0.97);background:#333}
+        .stat-card .num{font-size:var(--font-xl);font-weight:800;color:var(--orange)}
+        .stat-card .lbl{font-size:0.6rem;color:var(--text2);text-transform:uppercase;margin-top:0.2rem}
         
-        .alert-list{background:#2a2a2a;border:1px solid #333;border-radius:12px;padding:1rem}
-        .alert-list h3{color:#f97316;margin-bottom:0.8rem;font-size:0.9rem}
-        .alert-item{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid #333;font-size:0.85rem}
-        .badge{padding:0.2rem 0.5rem;border-radius:12px;font-size:0.7rem;font-weight:700}
+        .alert-list{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:0.8rem}
+        .alert-list h3{color:var(--orange);margin-bottom:0.5rem;font-size:var(--font-md)}
+        .alert-item{
+            display:flex;justify-content:space-between;align-items:center;
+            padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:var(--font-sm);
+            gap:0.5rem;flex-wrap:wrap;
+        }
+        .badge{padding:0.2rem 0.4rem;border-radius:10px;font-size:0.6rem;font-weight:700;white-space:nowrap}
         .badge.warn{background:#7c2d12;color:#fdba74}
         .badge.danger{background:#450a0a;color:#fca5a5}
         .badge.ok{background:#065f46;color:#6ee7b7}
         .badge.info{background:#1a3a5c;color:#93c5fd}
         
-        table{width:100%;border-collapse:collapse;background:#2a2a2a;border-radius:12px;overflow:hidden;font-size:0.85rem}
-        th{background:#1a1a1a;color:#f97316;font-size:0.7rem;text-transform:uppercase;padding:0.7rem;text-align:left}
-        td{padding:0.7rem;border-bottom:1px solid #333}
-        tr:hover td{background:#333}
+        /* === TABLAS SCROLLEABLES === */
+        .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;background:var(--card);border:1px solid var(--border)}
+        table{width:100%;min-width:500px;border-collapse:collapse;font-size:var(--font-sm)}
+        th{background:#0a0a0a;color:var(--orange);font-size:0.6rem;text-transform:uppercase;padding:0.5rem;text-align:left;position:sticky;top:0}
+        td{padding:0.5rem;border-bottom:1px solid var(--border);white-space:nowrap}
+        td:nth-child(1){white-space:normal;min-width:120px}
+        tr:active td{background:#333}
         
-        .btn{background:#f97316;color:#000;border:none;padding:0.5rem 1rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem}
-        .btn:hover{background:#fb923c}
-        .btn-outline{background:transparent;border:1px solid #f97316;color:#f97316;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.8rem}
-        .btn-sm{padding:0.3rem 0.7rem;font-size:0.7rem}
-        .btn-voice{background:#10b981;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem;animation:pulse 2s infinite}
-        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.4)}70%{box-shadow:0 0 0 10px rgba(16,185,129,0)}}
-        .btn-voice.listening{background:#ef4444;animation:none}
+        /* === BOTONES === */
+        .btn{
+            background:var(--orange);color:#000;border:none;padding:0.5rem 0.8rem;
+            border-radius:8px;font-weight:700;cursor:pointer;font-size:var(--font-sm);
+            transition:0.2s;white-space:nowrap;min-height:36px;
+        }
+        .btn:active{transform:scale(0.95);background:#fb923c}
+        .btn-outline{
+            background:transparent;border:1px solid var(--orange);color:var(--orange);
+            padding:0.5rem 0.8rem;border-radius:8px;cursor:pointer;font-size:var(--font-sm);
+            white-space:nowrap;min-height:36px;
+        }
+        .btn-outline:active{background:var(--orange);color:#000}
+        .btn-sm{padding:0.3rem 0.5rem;font-size:0.65rem;min-height:28px}
+        .btn-icon{width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
         
-        .inv-header{display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
-        .inv-header input{flex:1;padding:0.6rem;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;min-width:200px}
-        .inv-header select{padding:0.6rem;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff}
+        .btn-voice{
+            background:var(--success);color:#fff;border:none;padding:0.4rem 0.8rem;
+            border-radius:8px;font-weight:700;cursor:pointer;font-size:var(--font-sm);
+            min-height:36px;animation:pulse 2s infinite;
+        }
+        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.4)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}}
+        .btn-voice.listening{background:var(--danger);animation:none}
         
-        .asistente-layout{display:grid;grid-template-columns:1fr 1fr;gap:1rem;height:calc(100vh - 140px)}
-        .panel{background:#2a2a2a;border:1px solid #333;border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
-        .panel h3{color:#f97316;padding:0.8rem 1rem;border-bottom:1px solid #333;font-size:0.9rem;display:flex;justify-content:space-between;align-items:center}
-        .panel-body{flex:1;overflow-y:auto;padding:0.8rem}
-        .camera-area{display:flex;flex-direction:column;align-items:center;gap:0.5rem}
-        .camera-area img,.camera-area video{max-height:180px;border-radius:8px;display:none}
-        .placeholder{color:#666;text-align:center;padding:2rem}
-        .chat-msgs{display:flex;flex-direction:column;gap:0.6rem}
-        .msg{padding:0.6rem;border-radius:8px;font-size:0.8rem;line-height:1.4;max-width:90%}
-        .msg.user{background:#f97316;color:#000;align-self:flex-end}
-        .msg.ai{background:#333;color:#e0e0e0;align-self:flex-start;border-left:3px solid #f97316;white-space:pre-wrap}
-        .msg.sys{background:#1a2a1a;color:#6ee7b7;align-self:center;font-size:0.75rem}
-        .msg.action{background:#1a3a5c;color:#93c5fd;align-self:center;font-size:0.75rem;border:1px solid #3b82f6}
-        .chat-input{display:flex;gap:0.4rem;padding:0.8rem;border-top:1px solid #333}
-        .chat-input input{flex:1;padding:0.6rem;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;font-size:0.85rem}
+        /* === INVENTARIO HEADER === */
+        .inv-header{display:flex;gap:0.4rem;margin-bottom:0.8rem;flex-wrap:wrap}
+        .inv-header input{flex:1;padding:0.5rem;background:var(--card);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:var(--font-md);min-width:120px}
+        .inv-header select{padding:0.5rem;background:var(--card);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:var(--font-sm)}
         
-        .config-bar{background:#2a2a2a;border:2px solid #f97316;border-radius:10px;padding:0.8rem 1rem;margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap}
+        /* === ASISTENTE === */
+        .asistente-layout{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;height:calc(100vh - var(--topbar-h) - 3rem);height:calc(100dvh - var(--topbar-h) - 3rem)}
+        .panel{background:var(--card);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+        .panel h3{
+            color:var(--orange);padding:0.6rem 0.8rem;border-bottom:1px solid var(--border);
+            font-size:var(--font-md);display:flex;justify-content:space-between;align-items:center;
+            flex-shrink:0;
+        }
+        .panel-body{flex:1;overflow-y:auto;padding:0.6rem;-webkit-overflow-scrolling:touch}
+        .camera-area{display:flex;flex-direction:column;align-items:center;gap:0.4rem}
+        .camera-area img,.camera-area video{
+            max-height:150px;width:100%;border-radius:8px;object-fit:contain;background:#000;
+        }
+        .placeholder{color:var(--text2);text-align:center;padding:1.5rem;font-size:var(--font-sm)}
+        
+        .chat-msgs{display:flex;flex-direction:column;gap:0.4rem}
+        .msg{padding:0.5rem;border-radius:8px;font-size:var(--font-sm);line-height:1.4;max-width:90%}
+        .msg.user{background:var(--orange);color:#000;align-self:flex-end}
+        .msg.ai{background:#333;color:var(--text);align-self:flex-start;border-left:3px solid var(--orange);white-space:pre-wrap}
+        .msg.sys{background:#1a2a1a;color:#6ee7b7;align-self:center;font-size:0.7rem;text-align:center}
+        .msg.action{background:#1a3a5c;color:#93c5fd;align-self:center;font-size:0.7rem;border:1px solid #3b82f6}
+        
+        .chat-input{display:flex;gap:0.3rem;padding:0.5rem;border-top:1px solid var(--border);flex-shrink:0}
+        .chat-input input{flex:1;padding:0.5rem;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;color:#fff;font-size:var(--font-md);min-width:0}
+        .quick-row{display:flex;gap:0.3rem;flex-wrap:wrap;padding:0 0.5rem 0.3rem;flex-shrink:0}
+        
+        .config-bar{
+            background:var(--card);border:2px solid var(--orange);border-radius:10px;
+            padding:0.6rem;margin-bottom:0.5rem;display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;
+        }
         .config-bar.hidden{display:none}
-        .config-bar input{flex:1;padding:0.5rem;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#fff;font-family:monospace;min-width:200px}
+        .config-bar input{flex:1;padding:0.5rem;background:#0a0a0a;border:1px solid var(--border);border-radius:6px;color:#fff;font-family:monospace;font-size:0.8rem;min-width:150px}
         
-        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;z-index:1000;visibility:hidden;opacity:0;transition:0.2s}
+        /* === MODAL 3D === */
+        .modal-overlay{
+            position:fixed;top:0;left:0;width:100%;height:100%;height:100dvh;
+            background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;
+            z-index:1000;visibility:hidden;opacity:0;transition:0.2s;
+        }
         .modal-overlay.active{visibility:visible;opacity:1}
-        .modal{background:#1a1a1a;border:2px solid #333;border-radius:16px;width:95vw;height:90vh;display:flex;flex-direction:column;overflow:hidden}
+        .modal{
+            background:var(--card);border:2px solid var(--border);border-radius:12px;
+            width:95vw;height:85vh;height:85dvh;display:flex;flex-direction:column;overflow:hidden;
+        }
         .modal-body{display:flex;flex:1;overflow:hidden}
-        .modal-left{width:380px;min-width:380px;background:#252525;padding:1.5rem;overflow-y:auto;border-right:2px solid #333}
-        .modal-left h2{font-size:1.4rem;margin-bottom:1rem;color:#f97316}
-        .modal-right{flex:1;position:relative;background:#d4cfc4}
-        #three-container{width:100%;height:100%;cursor:grab}
+        .modal-left{
+            width:300px;min-width:280px;background:#1a1a1a;padding:1rem;
+            overflow-y:auto;border-right:2px solid var(--border);-webkit-overflow-scrolling:touch;
+        }
+        .modal-left h2{font-size:var(--font-lg);margin-bottom:0.8rem;color:var(--orange)}
+        .modal-right{flex:1;position:relative;background:#d4cfc4;min-height:200px}
+        #three-container{width:100%;height:100%;cursor:grab;touch-action:pan-x pan-y pinch-zoom}
         #three-container:active{cursor:grabbing}
-        .info-overlay{position:absolute;top:15px;left:15px;z-index:10;display:flex;flex-direction:column;gap:0.4rem}
-        .cat-badge{background:#f97316;color:#000;padding:0.4rem 1rem;border-radius:6px;font-weight:800;font-size:0.9rem}
-        .med-badge{background:rgba(0,0,0,0.7);color:#fff;padding:0.3rem 0.8rem;border-radius:6px;font-size:0.75rem}
-        .controls-help{position:absolute;bottom:15px;left:15px;color:#555;font-size:0.7rem;z-index:10;background:rgba(255,255,255,0.8);padding:0.3rem 0.8rem;border-radius:4px}
-        .view-btns{position:absolute;bottom:15px;right:15px;display:flex;gap:0.3rem;z-index:10}
-        .view-btn{background:rgba(0,0,0,0.6);border:1px solid #666;color:#fff;padding:0.4rem 0.8rem;border-radius:6px;cursor:pointer;font-size:0.7rem}
+        .info-overlay{position:absolute;top:10px;left:10px;z-index:10;display:flex;flex-direction:column;gap:0.3rem}
+        .cat-badge{background:var(--orange);color:#000;padding:0.3rem 0.7rem;border-radius:6px;font-weight:800;font-size:0.8rem}
+        .med-badge{background:rgba(0,0,0,0.7);color:#fff;padding:0.2rem 0.6rem;border-radius:6px;font-size:0.7rem}
+        .controls-help{position:absolute;bottom:10px;left:10px;color:#555;font-size:0.6rem;z-index:10;background:rgba(255,255,255,0.8);padding:0.2rem 0.5rem;border-radius:4px}
+        .view-btns{position:absolute;bottom:10px;right:10px;display:flex;gap:0.2rem;z-index:10}
+        .view-btn{background:rgba(0,0,0,0.6);border:1px solid #666;color:#fff;padding:0.3rem 0.5rem;border-radius:4px;cursor:pointer;font-size:0.6rem}
         
-        .form-group{margin-bottom:0.8rem}
-        .form-group label{display:block;color:#aaa;font-size:0.75rem;margin-bottom:0.2rem;font-weight:600}
-        .form-group input,.form-group select{width:100%;padding:0.6rem;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#fff;font-size:0.85rem}
-        .dim-row{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem}
-        .acabado-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem}
-        .acabado-btn{padding:0.5rem;border-radius:6px;border:2px solid #333;background:#1a1a1a;color:#999;cursor:pointer;text-align:center;font-size:0.7rem;font-weight:600;transition:0.2s}
-        .acabado-btn.activo{border-color:#f97316;color:#f97316;background:#2a1a0a}
-        .acabado-btn:hover{border-color:#f97316}
-        .form-actions{display:flex;gap:0.5rem;margin-top:1rem}
+        .form-group{margin-bottom:0.6rem}
+        .form-group label{display:block;color:var(--text2);font-size:0.7rem;margin-bottom:0.15rem;font-weight:600}
+        .form-group input,.form-group select{width:100%;padding:0.5rem;background:#0a0a0a;border:1px solid var(--border);border-radius:6px;color:#fff;font-size:var(--font-sm)}
+        .dim-row{display:grid;grid-template-columns:1fr 1fr;gap:0.3rem}
+        .acabado-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.3rem}
+        .acabado-btn{
+            padding:0.4rem;border-radius:6px;border:2px solid var(--border);background:#0a0a0a;
+            color:#999;cursor:pointer;text-align:center;font-size:0.65rem;font-weight:600;transition:0.2s;
+        }
+        .acabado-btn.activo{border-color:var(--orange);color:var(--orange);background:#2a1a0a}
+        .form-actions{display:flex;gap:0.4rem;margin-top:0.8rem}
         
-        @media(max-width:768px){
+        /* === RESPONSIVE === */
+        @media(min-width:1024px){
+            :root{--sidebar-w:180px}
+            .sidebar{padding:1rem 0.5rem;align-items:stretch}
+            .logo{display:block;font-size:1.3rem}
+            .sidebar .nav-item{flex-direction:row;font-size:0.8rem;padding:0.7rem;text-align:left}
+            .sidebar .nav-item .nav-icon{font-size:1rem}
+            .bottom-nav{display:none!important}
+        }
+        
+        @media(max-width:1023px){
             .sidebar{display:none}
-            .asistente-layout{grid-template-columns:1fr;height:auto}
-            .modal{flex-direction:column;width:100vw;height:100vh;border-radius:0}
+            .bottom-nav{display:block}
+            .content{padding-bottom:80px}
+            .asistente-layout{grid-template-columns:1fr;height:auto;min-height:60vh}
+            .modal-left{width:100%!important;min-width:100%!important;max-height:40%}
             .modal-body{flex-direction:column}
-            .modal-left{width:100%;min-width:100%;height:50%;border-right:none;border-bottom:2px solid #333}
-            .modal-right{height:50%}
+            .modal{width:100vw;height:100vh;height:100dvh;border-radius:0}
+        }
+        
+        @media(max-width:480px){
+            .stats-grid{grid-template-columns:repeat(2,1fr)}
+            .topbar h1{font-size:0.9rem}
+            .btn,.btn-outline{font-size:0.7rem;padding:0.4rem 0.6rem;min-height:32px}
+            .inv-header{flex-direction:column}
+            .inv-header input{width:100%}
+            .camera-area img,.camera-area video{max-height:120px}
         }
     </style>
 </head>
 <body>
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <div class="logo">⚒️ HERRERIAPRO</div>
-        <div class="nav-item active" data-page="dashboard"><i>📊</i> Dashboard</div>
-        <div class="nav-item" data-page="inventario"><i>📦</i> Inventario</div>
-        <div class="nav-item" data-page="asistente"><i>🤖</i> Asistente IA</div>
+    <!-- SIDEBAR DESKTOP -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">⚒️ HP</div>
+        <div class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span><span class="nav-text">Dashboard</span></div>
+        <div class="nav-item" data-page="inventario"><span class="nav-icon">📦</span><span class="nav-text">Inventario</span></div>
+        <div class="nav-item" data-page="asistente"><span class="nav-icon">🤖</span><span class="nav-text">Asistente</span></div>
     </div>
     
     <div class="main">
         <div class="topbar">
             <h1 id="pageTitle">📊 Dashboard</h1>
             <div class="topbar-right">
-                <span style="font-size:0.7rem;color:#888" id="statusText">IA: Sin conectar</span>
+                <span style="font-size:0.65rem;color:var(--text2);display:none" class="status-label" id="statusText">IA: Off</span>
                 <span class="status-dot off" id="statusDot"></span>
-                <button class="btn-sm btn-outline" onclick="toggleConfig()">🔑 Key</button>
+                <button class="btn-sm btn-outline" onclick="toggleConfig()" style="font-size:0.6rem">🔑</button>
             </div>
         </div>
         
         <div class="config-bar hidden" id="configBar">
-            <span>🔑</span>
-            <input type="password" id="apiKeyInput" placeholder="API Key de Groq (gsk_...)">
-            <button class="btn btn-sm" onclick="guardarKey()">Conectar</button>
+            <input type="password" id="apiKeyInput" placeholder="API Key Groq (gsk_...)">
+            <button class="btn btn-sm" onclick="guardarKey()">✓</button>
         </div>
         
         <div class="content">
@@ -155,11 +283,11 @@
             
             <div class="page" id="page-inventario">
                 <div class="inv-header">
-                    <input type="text" id="searchInv" placeholder="🔍 Buscar material..." oninput="renderInventario()">
+                    <input type="text" id="searchInv" placeholder="🔍 Buscar..." oninput="renderInventario()">
                     <select id="filtroCat" onchange="renderInventario()"><option>Todos</option></select>
-                    <button class="btn btn-sm" onclick="abrirModal3D()">➕ Nuevo</button>
+                    <button class="btn btn-sm" onclick="abrirModal3D()">➕</button>
                 </div>
-                <div style="overflow-x:auto"><table id="tablaInventario"></table></div>
+                <div class="table-wrap"><table id="tablaInventario"></table></div>
             </div>
             
             <div class="page" id="page-asistente">
@@ -168,48 +296,33 @@
                         <h3>📸 Captura</h3>
                         <div class="panel-body">
                             <div class="camera-area">
-                                <video id="cameraPreview" autoplay playsinline></video>
-                                <img id="previewImage" alt="Preview">
+                                <video id="cameraPreview" autoplay playsinline style="display:none"></video>
+                                <img id="previewImage" alt="Preview" style="display:none">
                                 <canvas id="photoCanvas" style="display:none"></canvas>
-                                <div class="placeholder" id="camPlaceholder">📷<br>Toma o sube una foto</div>
-                                <div style="display:flex;gap:0.4rem;flex-wrap:wrap;justify-content:center">
-                                    <button class="btn btn-sm" onclick="abrirCamara()">📸 Cámara</button>
-                                    <button class="btn-outline btn-sm" onclick="document.getElementById('fileInput').click()">📁 Subir</button>
-                                    <button class="btn btn-sm" id="btnAnalizar" onclick="analizarFoto()" disabled>🔍 Analizar</button>
-                                    <button class="btn-outline btn-sm" id="btnCapturar" onclick="capturarFoto()" style="display:none">📷 Capturar</button>
+                                <div class="placeholder" id="camPlaceholder">📷 Toma o sube foto</div>
+                                <div style="display:flex;gap:0.3rem;flex-wrap:wrap;justify-content:center">
+                                    <button class="btn btn-sm" onclick="abrirCamara()">📸</button>
+                                    <button class="btn-outline btn-sm" onclick="document.getElementById('fileInput').click()">📁</button>
+                                    <button class="btn btn-sm" id="btnAnalizar" onclick="analizarFoto()" disabled>🔍</button>
+                                    <button class="btn-outline btn-sm" id="btnCapturar" onclick="capturarFoto()" style="display:none">📷</button>
                                 </div>
                                 <input type="file" id="fileInput" accept="image/*" style="display:none">
                             </div>
                         </div>
                     </div>
                     <div class="panel">
-                        <h3>
-                            💬 Consultas
-                            <span style="display:flex;gap:0.3rem">
-                                <button class="btn-sm btn-voice" id="btnVoice" onclick="toggleVoz()">🎤 Voz</button>
-                            </span>
-                        </h3>
+                        <h3>💬 Asistente <button class="btn-voice btn-sm" id="btnVoice" onclick="toggleVoz()">🎤</button></h3>
                         <div class="panel-body"><div class="chat-msgs" id="chatMessages">
-                            <div class="msg ai">
-                                👋 <b>¡Hola, Lo!</b><br><br>
-                                Puedo <b>gestionar tu inventario</b> por texto o voz:<br><br>
-                                🗣️ <b>Ejemplos:</b><br>
-                                • "Usé 5 PTR 2×2 para el portón"<br>
-                                • "Agrega 10 láminas galvanizadas"<br>
-                                • "Quita 3 varillas 3/8"<br>
-                                • "Ya no tengo angular 1 pulgada"<br>
-                                • "Pon 50 electrodos 6013"<br><br>
-                                <b>Pega tu API Key y dime qué necesitas.</b>
-                            </div>
+                            <div class="msg ai">👋 <b>¡Hola!</b> Puedo gestionar tu inventario:<br>• "Usé 5 PTR 2×2"<br>• "Agrega 10 láminas"<br>• "¿Cuánto PTR queda?"</div>
                         </div></div>
-                        <div style="padding:0 0.8rem 0.5rem;display:flex;gap:0.3rem;flex-wrap:wrap">
-                            <button class="btn-outline btn-sm" onclick="preguntar('Usé 3 PTR 2×2 y 2 láminas negras')">📦 Registrar uso</button>
-                            <button class="btn-outline btn-sm" onclick="preguntar('Agrega 20 varillas 3/8 al inventario')">➕ Agregar stock</button>
-                            <button class="btn-outline btn-sm" onclick="preguntar('¿Cuánto PTR me queda?')">📋 Consultar stock</button>
+                        <div class="quick-row">
+                            <button class="btn-outline btn-sm" onclick="preguntar('Usé 3 PTR 2×2')">📦 Usar</button>
+                            <button class="btn-outline btn-sm" onclick="preguntar('Agrega 20 varillas 3/8')">➕ Agregar</button>
+                            <button class="btn-outline btn-sm" onclick="preguntar('¿Cuánto stock hay?')">📋 Stock</button>
                         </div>
                         <div class="chat-input">
-                            <input type="text" id="preguntaInput" placeholder="Di qué material usaste o necesitas..." onkeypress="if(event.key==='Enter')preguntar()">
-                            <button class="btn btn-sm" onclick="preguntar()">➤</button>
+                            <input type="text" id="preguntaInput" placeholder="Escribe aquí..." onkeypress="if(event.key==='Enter')preguntar()">
+                            <button class="btn btn-sm btn-icon" onclick="preguntar()">➤</button>
                         </div>
                     </div>
                 </div>
@@ -217,50 +330,38 @@
         </div>
     </div>
     
+    <!-- BOTTOM NAV MOBILE -->
+    <nav class="bottom-nav" id="bottomNav">
+        <div class="bottom-nav-inner">
+            <button class="bn-item active" data-page="dashboard"><span class="bn-icon">📊</span>Inicio</button>
+            <button class="bn-item" data-page="inventario"><span class="bn-icon">📦</span>Inventario</button>
+            <button class="bn-item" data-page="asistente"><span class="bn-icon">🤖</span>Asistente</button>
+        </div>
+    </nav>
+    
     <!-- MODAL 3D -->
     <div class="modal-overlay" id="modalMaterial">
         <div class="modal">
             <div class="modal-body">
                 <div class="modal-left">
-                    <h2 id="modalTitle">🆕 Nuevo Material</h2>
-                    <div class="form-group">
-                        <label>Tipo</label>
-                        <select id="catSelect" onchange="cambioCategoria()">
-                            <option value="PTR">🟫 PTR</option><option value="Redondo">🔴 Tubo Cédula</option><option value="Tubo Ligero">🪈 Tubo Ligero</option>
-                            <option value="Lámina">📄 Lámina</option><option value="Varilla">〰️ Varilla</option><option value="Flecha">🔩 Flecha</option>
-                            <option value="Angular">📐 Angular</option><option value="Electrodo">⚡ Electrodo</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Nombre</label><input type="text" id="nombreInput" placeholder="Nombre del material"></div>
+                    <h2 id="modalTitle">Material</h2>
+                    <div class="form-group"><label>Tipo</label><select id="catSelect" onchange="cambioCategoria()"><option value="PTR">🟫 PTR</option><option value="Redondo">🔴 Tubo Cédula</option><option value="Tubo Ligero">🪈 Tubo Ligero</option><option value="Lámina">📄 Lámina</option><option value="Varilla">〰️ Varilla</option><option value="Flecha">🔩 Flecha</option><option value="Angular">📐 Angular</option><option value="Electrodo">⚡ Electrodo</option></select></div>
+                    <div class="form-group"><label>Nombre</label><input type="text" id="nombreInput" placeholder="Nombre"></div>
                     <div id="dimensionesContainer"></div>
-                    <div class="form-group">
-                        <label>Acabado</label>
-                        <div class="acabado-grid">
-                            <div class="acabado-btn activo" data-acabado="inox">✨ Inox</div>
-                            <div class="acabado-btn" data-acabado="carbon">🔩 Carbón</div>
-                            <div class="acabado-btn" data-acabado="galvanizado">🔧 Galv</div>
-                            <div class="acabado-btn" data-acabado="negro">🖤 Negro</div>
-                        </div>
-                    </div>
-                    <div class="dim-row">
-                        <div class="form-group"><label>Cantidad</label><input type="number" id="cantidadInput" min="0" value="0"></div>
-                        <div class="form-group"><label>Unidad</label><input type="text" id="unidadInput" value="pza"></div>
-                    </div>
-                    <div class="form-group"><label>Stock Mín</label><input type="number" id="minInput" min="0" value="5"></div>
-                    <div class="form-group"><label>Notas</label><input type="text" id="notasInput" placeholder="Calibre, uso..."></div>
+                    <div class="form-group"><label>Acabado</label><div class="acabado-grid"><div class="acabado-btn activo" data-acabado="inox">✨ Inox</div><div class="acabado-btn" data-acabado="carbon">🔩 Carbón</div><div class="acabado-btn" data-acabado="galvanizado">🔧 Galv</div><div class="acabado-btn" data-acabado="negro">🖤 Negro</div></div></div>
+                    <div class="dim-row"><div class="form-group"><label>Cant</label><input type="number" id="cantidadInput" value="0"></div><div class="form-group"><label>Unidad</label><input type="text" id="unidadInput" value="pza"></div></div>
+                    <div class="form-group"><label>Stock Mín</label><input type="number" id="minInput" value="5"></div>
+                    <div class="form-group"><label>Notas</label><input type="text" id="notasInput" placeholder="Calibre..."></div>
                     <input type="hidden" id="editId">
                     <div class="form-actions">
-                        <button class="btn-outline" onclick="closeModal3D()">Cancelar</button>
-                        <button class="btn" onclick="guardarMaterial()">💾 Guardar</button>
+                        <button class="btn-outline btn-sm" onclick="closeModal3D()">✕</button>
+                        <button class="btn btn-sm" onclick="guardarMaterial()">💾</button>
                     </div>
                 </div>
                 <div class="modal-right">
                     <div id="three-container">
-                        <div class="info-overlay">
-                            <span class="cat-badge" id="catLabel3D">PTR</span>
-                            <span class="med-badge" id="medLabel3D">2" × 2" × 6m</span>
-                        </div>
-                        <div class="controls-help">🖱️ Arrastra para girar | Rueda zoom</div>
+                        <div class="info-overlay"><span class="cat-badge" id="catLabel3D">PTR</span><span class="med-badge" id="medLabel3D">2"×2"×6m</span></div>
+                        <div class="controls-help">Desliza: girar | Pellizca: zoom</div>
                         <div class="view-btns">
                             <button class="view-btn" onclick="resetView()">🔄</button>
                             <button class="view-btn" onclick="viewFront()">📷</button>
@@ -276,9 +377,10 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         
+        // ==================== DATOS ====================
         let materiales = [
             {id:1,categoria:'PTR',nombre:'PTR 2×2 cal 14',cantidad:45,unidad:'pza',min:10,acabado:'inox',notas:'',medidas:{ladoA:0.0508,ladoB:0.0508,espesor:0.0019,largo:6}},
-            {id:2,categoria:'Redondo',nombre:'Tubo Redondo 2" céd 40',cantidad:25,unidad:'pza',min:10,acabado:'carbon',notas:'Cédula 40',medidas:{diametro:0.0603,espesor:0.00391,largo:6}},
+            {id:2,categoria:'Redondo',nombre:'Tubo Redondo 2" céd 40',cantidad:25,unidad:'pza',min:10,acabado:'carbon',notas:'Céd 40',medidas:{diametro:0.0603,espesor:0.00391,largo:6}},
             {id:3,categoria:'Lámina',nombre:'Lámina Negra 3mm',cantidad:12,unidad:'hoja',min:5,acabado:'carbon',notas:'',medidas:{largo:2.44,ancho:1.22,espesor:0.003}},
             {id:4,categoria:'Flecha',nombre:'Flecha 1/2"',cantidad:80,unidad:'pza',min:30,acabado:'negro',notas:'',medidas:{diametro:0.0127,largo:12}},
             {id:5,categoria:'Varilla',nombre:'Varilla 3/8 Inox',cantidad:60,unidad:'pza',min:20,acabado:'inox',notas:'',medidas:{diametro:0.0095,largo:12}},
@@ -287,90 +389,103 @@
             {id:8,categoria:'Tubo Ligero',nombre:'Tubo Redondo 1 1/2" ligero',cantidad:50,unidad:'pza',min:20,acabado:'negro',notas:'Cal 18',medidas:{diametro:0.0483,espesor:0.0012,largo:6}},
         ];
         
-        let API_KEY = localStorage.getItem('hp_key_v3') || '';
+        let API_KEY = localStorage.getItem('hp_key_m') || '';
         let imagenActual = null, stream = null, paginaActual = 'dashboard', acabadoActual = 'inox';
         let recognition = null, escuchando = false;
         
-        // ==================== 3D ====================
+        // ==================== 3D (optimizado para móvil) ====================
         let threeScene, threeCamera, threeRenderer, threeControls, currentMesh;
         
         function initThree() {
             const c = document.getElementById('three-container');
             if(!c||threeScene) return;
             threeScene = new THREE.Scene(); threeScene.background = new THREE.Color(0xd4cfc4);
-            threeCamera = new THREE.PerspectiveCamera(50,c.clientWidth/c.clientHeight,0.01,100); threeCamera.position.set(3,2,5);
-            threeRenderer = new THREE.WebGLRenderer({antialias:true}); threeRenderer.setSize(c.clientWidth,c.clientHeight);
-            threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2)); threeRenderer.shadowMap.enabled = true;
+            threeCamera = new THREE.PerspectiveCamera(50,c.clientWidth/c.clientHeight,0.1,50); 
+            threeCamera.position.set(2.5,1.8,4);
+            threeRenderer = new THREE.WebGLRenderer({antialias:true,powerPreference:'low-power'});
+            threeRenderer.setSize(c.clientWidth,c.clientHeight);
+            threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+            threeRenderer.shadowMap.enabled = false; // Apagar sombras para mejor rendimiento en móvil
             c.appendChild(threeRenderer.domElement);
-            threeControls = new OrbitControls(threeCamera,threeRenderer.domElement); threeControls.enableDamping=true; threeControls.target.set(0,0.3,0);
-            threeScene.add(new THREE.AmbientLight(0xffffff,0.7));
-            const k = new THREE.DirectionalLight(0xffffff,1.5); k.position.set(5,8,5); k.castShadow=true; threeScene.add(k);
-            threeScene.add(new THREE.DirectionalLight(0x8899cc,0.5)).position.set(-3,1,-2);
-            const f = new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:0xc8c0b0,roughness:0.8}));
-            f.rotation.x=-Math.PI/2; f.position.y=-1; f.receiveShadow=true; threeScene.add(f);
-            const g = new THREE.GridHelper(8,30,0x999999,0xcccccc); g.position.y=-0.99; threeScene.add(g);
+            threeControls = new OrbitControls(threeCamera,threeRenderer.domElement);
+            threeControls.enableDamping=true; threeControls.dampingFactor=0.08;
+            threeControls.target.set(0,0.3,0);
+            threeControls.touches = {ONE:THREE.TOUCH.ROTATE,TWO:THREE.TOUCH.DOLLY_PAN};
+            threeScene.add(new THREE.AmbientLight(0xffffff,0.8));
+            const k = new THREE.DirectionalLight(0xffffff,1.2); k.position.set(3,6,3); threeScene.add(k);
+            const f = new THREE.Mesh(new THREE.PlaneGeometry(15,15),new THREE.MeshStandardMaterial({color:0xc8c0b0,roughness:0.8}));
+            f.rotation.x=-Math.PI/2; f.position.y=-1; threeScene.add(f);
+            const g = new THREE.GridHelper(6,20,0x999999,0xcccccc); g.position.y=-0.99; threeScene.add(g);
             animate3D();
+            
+            // Redimensionar cuando gira el dispositivo
+            new ResizeObserver(()=>{
+                if(threeCamera&&threeRenderer){
+                    threeCamera.aspect=c.clientWidth/c.clientHeight;
+                    threeCamera.updateProjectionMatrix();
+                    threeRenderer.setSize(c.clientWidth,c.clientHeight);
+                }
+            }).observe(c);
         }
+        
         function animate3D(){requestAnimationFrame(animate3D);if(threeControls)threeControls.update();if(threeRenderer&&threeScene&&threeCamera)threeRenderer.render(threeScene,threeCamera);}
         function clearMesh(){if(currentMesh){threeScene.remove(currentMesh);currentMesh.geometry?.dispose();currentMesh.material?.dispose?.();currentMesh=null;}}
-        function getMaterial(a){const m={inox:new THREE.MeshStandardMaterial({color:0xd0d0d8,roughness:0.25,metalness:0.95}),galvanizado:new THREE.MeshStandardMaterial({color:0xb8bcc0,roughness:0.35,metalness:0.8}),negro:new THREE.MeshStandardMaterial({color:0x3a3a3a,roughness:0.5,metalness:0.6}),carbon:new THREE.MeshStandardMaterial({color:0x6a6a6a,roughness:0.55,metalness:0.5})};return m[a]||m.carbon;}
+        function getMaterial(a){const m={inox:new THREE.MeshStandardMaterial({color:0xd0d0d8,roughness:0.3,metalness:0.9}),galvanizado:new THREE.MeshStandardMaterial({color:0xb8bcc0,roughness:0.4,metalness:0.7}),negro:new THREE.MeshStandardMaterial({color:0x3a3a3a,roughness:0.5,metalness:0.5}),carbon:new THREE.MeshStandardMaterial({color:0x6a6a6a,roughness:0.5,metalness:0.4})};return m[a]||m.carbon;}
         
         function crearGeometria(cat,med,acabado){
             const mat=getMaterial(acabado);let geo;
             switch(cat){
                 case'Lámina':geo=new THREE.BoxGeometry(med.espesor,med.largo,med.ancho);break;
                 case'PTR':geo=new THREE.BoxGeometry(med.ladoA,med.ladoB,med.largo||6);break;
-                case'Redondo':case'Tubo Ligero':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||6,32);break;
-                case'Varilla':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||12,32);break;
+                case'Redondo':case'Tubo Ligero':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||6,24);break;
+                case'Varilla':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||12,24);break;
                 case'Flecha':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||12,8);break;
                 case'Angular':const s=new THREE.Shape();s.moveTo(0,0);s.lineTo(med.alaA,0);s.lineTo(med.alaA,med.espesor);s.lineTo(med.espesor,med.espesor);s.lineTo(med.espesor,med.alaB);s.lineTo(0,med.alaB);s.closePath();geo=new THREE.ExtrudeGeometry(s,{steps:1,depth:med.largo||6,bevelEnabled:true,bevelThickness:0.001,bevelSize:0.001});geo.translate(-med.alaA/2,-med.alaB/2,-(med.largo||6)/2);break;
-                case'Electrodo':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||0.35,16);break;
+                case'Electrodo':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||0.35,12);break;
                 default:geo=new THREE.BoxGeometry(0.1,0.1,0.1);
             }
-            const mesh=new THREE.Mesh(geo,mat);mesh.castShadow=true;mesh.receiveShadow=true;
-            const edges=new THREE.EdgesGeometry(geo);mesh.add(new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:0x000000,transparent:true,opacity:0.15})));
-            return mesh;
+            return new THREE.Mesh(geo,mat);
         }
         
         function update3D(){
             if(!threeScene)return;
-            const cat=document.getElementById('catSelect').value,med=obtenerMedidas3D();
+            const cat=document.getElementById('catSelect')?.value||'PTR',med=obtenerMedidas3D();
             document.getElementById('catLabel3D').textContent=cat.toUpperCase();
             document.getElementById('medLabel3D').textContent=formatearMedidas(cat,med);
             clearMesh();currentMesh=crearGeometria(cat,med,acabadoActual);threeScene.add(currentMesh);
             const box=new THREE.Box3().setFromObject(currentMesh),size=box.getSize(new THREE.Vector3()).length();
-            threeControls.target.copy(box.getCenter(new THREE.Vector3()));threeCamera.position.set(size*1.3,size*0.8,size*1.3);threeControls.update();
+            threeControls.target.copy(box.getCenter(new THREE.Vector3()));threeControls.update();
         }
         
         function obtenerMedidas3D(){
-            const cat=document.getElementById('catSelect').value,m={};
-            if(cat==='Lámina'){m.largo=+document.getElementById('dimLargo')?.value||2.44;m.ancho=+document.getElementById('dimAncho')?.value||1.22;m.espesor=+document.getElementById('dimEspesor')?.value||0.003}
-            else if(cat==='PTR'){m.ladoA=+document.getElementById('dimLadoA')?.value||0.0508;m.ladoB=+document.getElementById('dimLadoB')?.value||0.0508;m.espesor=+document.getElementById('dimEspesor')?.value||0.0019;m.largo=+document.getElementById('dimLargo')?.value||6}
-            else if(cat==='Redondo'||cat==='Tubo Ligero'){m.diametro=+document.getElementById('dimDiametro')?.value||0.0483;m.espesor=+document.getElementById('dimEspesor')?.value||0.0012;m.largo=+document.getElementById('dimLargo')?.value||6}
-            else if(cat==='Varilla'){m.diametro=+document.getElementById('dimDiametro')?.value||0.0095;m.largo=+document.getElementById('dimLargo')?.value||12}
-            else if(cat==='Flecha'){m.diametro=+document.getElementById('dimDiametro')?.value||0.0127;m.largo=+document.getElementById('dimLargo')?.value||12}
-            else if(cat==='Angular'){m.alaA=+document.getElementById('dimAlaA')?.value||0.0254;m.alaB=+document.getElementById('dimAlaB')?.value||0.0254;m.espesor=+document.getElementById('dimEspesor')?.value||0.003175;m.largo=+document.getElementById('dimLargo')?.value||6}
-            else if(cat==='Electrodo'){m.diametro=+document.getElementById('dimDiametro')?.value||0.0032;m.largo=+document.getElementById('dimLargo')?.value||0.35}
+            const cat=document.getElementById('catSelect')?.value||'PTR',m={};
+            const g=(id,d)=>+(document.getElementById(id)?.value||d);
+            if(cat==='Lámina'){m.largo=g('dimLargo',2.44);m.ancho=g('dimAncho',1.22);m.espesor=g('dimEspesor',0.003)}
+            else if(cat==='PTR'){m.ladoA=g('dimLadoA',0.0508);m.ladoB=g('dimLadoB',0.0508);m.espesor=g('dimEspesor',0.0019);m.largo=g('dimLargo',6)}
+            else if(cat==='Redondo'||cat==='Tubo Ligero'){m.diametro=g('dimDiametro',0.0483);m.espesor=g('dimEspesor',0.0012);m.largo=g('dimLargo',6)}
+            else if(cat==='Varilla'){m.diametro=g('dimDiametro',0.0095);m.largo=g('dimLargo',12)}
+            else if(cat==='Flecha'){m.diametro=g('dimDiametro',0.0127);m.largo=g('dimLargo',12)}
+            else if(cat==='Angular'){m.alaA=g('dimAlaA',0.0254);m.alaB=g('dimAlaB',0.0254);m.espesor=g('dimEspesor',0.003175);m.largo=g('dimLargo',6)}
+            else if(cat==='Electrodo'){m.diametro=g('dimDiametro',0.0032);m.largo=g('dimLargo',0.35)}
             return m;
         }
         
         function formatearMedidas(cat,m){
-            if(cat==='Lámina')return`${m.largo?.toFixed(2)}m × ${m.ancho?.toFixed(2)}m × ${(m.espesor*1000)?.toFixed(1)}mm`;
-            if(cat==='PTR')return`${(m.ladoA*39.37)?.toFixed(1)}" × ${(m.ladoB*39.37)?.toFixed(1)}" × ${m.largo?.toFixed(1)}m`;
-            if(cat==='Redondo'||cat==='Tubo Ligero')return`Ø${(m.diametro*39.37)?.toFixed(1)}" × ${m.largo?.toFixed(1)}m | Esp:${(m.espesor*1000)?.toFixed(1)}mm`;
-            if(cat==='Varilla'||cat==='Flecha')return`Ø${(m.diametro*1000)?.toFixed(1)}mm × ${m.largo?.toFixed(1)}m`;
-            if(cat==='Angular')return`${(m.alaA*39.37)?.toFixed(1)}" × ${(m.alaB*39.37)?.toFixed(1)}" × ${m.largo?.toFixed(1)}m`;
-            if(cat==='Electrodo')return`Ø${(m.diametro*1000)?.toFixed(1)}mm × ${(m.largo*100)?.toFixed(0)}cm`;
+            if(cat==='Lámina')return`${m.largo?.toFixed(2)}m × ${m.ancho?.toFixed(2)}m`;
+            if(cat==='PTR')return`${(m.ladoA*39.37)?.toFixed(1)}"×${(m.ladoB*39.37)?.toFixed(1)}"×${m.largo?.toFixed(1)}m`;
+            if(cat==='Redondo'||cat==='Tubo Ligero')return`Ø${(m.diametro*39.37)?.toFixed(1)}"×${m.largo?.toFixed(1)}m`;
+            if(cat==='Varilla'||cat==='Flecha')return`Ø${(m.diametro*1000)?.toFixed(1)}mm×${m.largo?.toFixed(1)}m`;
+            if(cat==='Angular')return`${(m.alaA*39.37)?.toFixed(1)}"×${(m.alaB*39.37)?.toFixed(1)}"×${m.largo?.toFixed(1)}m`;
+            if(cat==='Electrodo')return`Ø${(m.diametro*1000)?.toFixed(1)}mm×${(m.largo*100)?.toFixed(0)}cm`;
             return'';
         }
         
         function renderDimensiones(){
-            const cat=document.getElementById('catSelect').value;let h='';
+            const cat=document.getElementById('catSelect')?.value||'PTR';let h='';
             if(cat==='Lámina')h='<div class="form-group"><label>Largo (m)</label><input type="number" step="0.01" id="dimLargo" value="2.44" oninput="update3D()"></div><div class="form-group"><label>Ancho (m)</label><input type="number" step="0.01" id="dimAncho" value="1.22" oninput="update3D()"></div><div class="form-group"><label>Espesor (m)</label><input type="number" step="0.0001" id="dimEspesor" value="0.003" oninput="update3D()"></div>';
             else if(cat==='PTR')h='<div class="dim-row"><div class="form-group"><label>Lado A</label><input type="number" step="0.001" id="dimLadoA" value="0.0508" oninput="update3D()"></div><div class="form-group"><label>Lado B</label><input type="number" step="0.001" id="dimLadoB" value="0.0508" oninput="update3D()"></div></div><div class="form-group"><label>Espesor</label><input type="number" step="0.0001" id="dimEspesor" value="0.0019" oninput="update3D()"></div><div class="form-group"><label>Largo</label><input type="number" step="0.1" id="dimLargo" value="6" oninput="update3D()"></div>';
             else if(cat==='Redondo'||cat==='Tubo Ligero')h='<div class="form-group"><label>Diámetro (m)</label><input type="number" step="0.0001" id="dimDiametro" value="0.0483" oninput="update3D()"></div><div class="form-group"><label>Espesor (m)</label><input type="number" step="0.0001" id="dimEspesor" value="0.0012" oninput="update3D()"></div><div class="form-group"><label>Largo (m)</label><input type="number" step="0.1" id="dimLargo" value="6" oninput="update3D()"></div>';
-            else if(cat==='Varilla')h='<div class="form-group"><label>Diámetro (m)</label><input type="number" step="0.0001" id="dimDiametro" value="0.0095" oninput="update3D()"></div><div class="form-group"><label>Largo (m)</label><input type="number" step="0.1" id="dimLargo" value="12" oninput="update3D()"></div>';
-            else if(cat==='Flecha')h='<div class="form-group"><label>Diámetro (m)</label><input type="number" step="0.0001" id="dimDiametro" value="0.0127" oninput="update3D()"></div><div class="form-group"><label>Largo (m)</label><input type="number" step="0.1" id="dimLargo" value="12" oninput="update3D()"></div>';
+            else if(cat==='Varilla'||cat==='Flecha')h='<div class="form-group"><label>Diámetro (m)</label><input type="number" step="0.0001" id="dimDiametro" value="'+(cat==='Varilla'?'0.0095':'0.0127')+'" oninput="update3D()"></div><div class="form-group"><label>Largo (m)</label><input type="number" step="0.1" id="dimLargo" value="12" oninput="update3D()"></div>';
             else if(cat==='Angular')h='<div class="dim-row"><div class="form-group"><label>Ala A</label><input type="number" step="0.001" id="dimAlaA" value="0.0254" oninput="update3D()"></div><div class="form-group"><label>Ala B</label><input type="number" step="0.001" id="dimAlaB" value="0.0254" oninput="update3D()"></div></div><div class="form-group"><label>Espesor</label><input type="number" step="0.0001" id="dimEspesor" value="0.003175" oninput="update3D()"></div><div class="form-group"><label>Largo</label><input type="number" step="0.1" id="dimLargo" value="6" oninput="update3D()"></div>';
             else if(cat==='Electrodo')h='<div class="form-group"><label>Diámetro (m)</label><input type="number" step="0.0001" id="dimDiametro" value="0.0032" oninput="update3D()"></div><div class="form-group"><label>Largo (m)</label><input type="number" step="0.01" id="dimLargo" value="0.35" oninput="update3D()"></div>';
             document.getElementById('dimensionesContainer').innerHTML=h;
@@ -378,34 +493,40 @@
         
         function cambioCategoria(){renderDimensiones();update3D();}
         
+        // ==================== FUNCIONES GLOBALES ====================
         window.abrirModal3D=function(mat){
-            document.getElementById('modalMaterial').classList.add('active');if(!threeScene)initThree();
+            document.getElementById('modalMaterial').classList.add('active');
+            if(!threeScene) setTimeout(initThree,100);
             document.querySelectorAll('.acabado-btn').forEach(b=>{b.classList.remove('activo');b.onclick=()=>{document.querySelectorAll('.acabado-btn').forEach(x=>x.classList.remove('activo'));b.classList.add('activo');acabadoActual=b.dataset.acabado;update3D();};});
             if(mat&&mat.id){
-                document.getElementById('modalTitle').textContent='✏️ Editar Material';
+                document.getElementById('modalTitle').textContent='✏️ Editar';
                 document.getElementById('catSelect').value=mat.categoria;document.getElementById('nombreInput').value=mat.nombre;
                 document.getElementById('cantidadInput').value=mat.cantidad;document.getElementById('unidadInput').value=mat.unidad;
                 document.getElementById('minInput').value=mat.min;document.getElementById('notasInput').value=mat.notas||'';
                 document.getElementById('editId').value=mat.id;acabadoActual=mat.acabado||'carbon';renderDimensiones();
-                setTimeout(()=>{document.querySelectorAll('.acabado-btn').forEach(b=>b.classList.toggle('activo',b.dataset.acabado===acabadoActual));if(mat.medidas)for(let k in mat.medidas){const el=document.getElementById('dim'+k.charAt(0).toUpperCase()+k.slice(1));if(el)el.value=mat.medidas[k];}update3D();},150);
+                setTimeout(()=>{document.querySelectorAll('.acabado-btn').forEach(b=>b.classList.toggle('activo',b.dataset.acabado===acabadoActual));if(mat.medidas)for(let k in mat.medidas){const el=document.getElementById('dim'+k.charAt(0).toUpperCase()+k.slice(1));if(el)el.value=mat.medidas[k];}update3D();},200);
             }else{
-                document.getElementById('modalTitle').textContent='🆕 Nuevo Material';document.getElementById('catSelect').value='PTR';
-                document.getElementById('nombreInput').value='';document.getElementById('cantidadInput').value='0';
-                document.getElementById('unidadInput').value='pza';document.getElementById('minInput').value='5';
-                document.getElementById('notasInput').value='';document.getElementById('editId').value='';acabadoActual='inox';
-                renderDimensiones();setTimeout(()=>{document.querySelectorAll('.acabado-btn').forEach(b=>b.classList.toggle('activo',b.dataset.acabado==='inox'));update3D();},150);
+                document.getElementById('modalTitle').textContent='🆕 Nuevo';
+                document.getElementById('catSelect').value='PTR';document.getElementById('nombreInput').value='';
+                document.getElementById('cantidadInput').value='0';document.getElementById('unidadInput').value='pza';
+                document.getElementById('minInput').value='5';document.getElementById('notasInput').value='';
+                document.getElementById('editId').value='';acabadoActual='inox';renderDimensiones();
+                setTimeout(()=>{document.querySelectorAll('.acabado-btn').forEach(b=>b.classList.toggle('activo',b.dataset.acabado==='inox'));update3D();},200);
             }
         };
-        window.closeModal3D=function(){document.getElementById('modalMaterial').classList.remove('active');clearMesh();};
+        
+        window.closeModal3D=function(){document.getElementById('modalMaterial').classList.remove('active');if(currentMesh)clearMesh();};
         window.cambioCategoria=cambioCategoria;window.update3D=update3D;
-        window.resetView=function(){if(threeCamera&&threeControls){threeControls.target.set(0,0.3,0);threeCamera.position.set(3,2,5);threeControls.update();}};
-        window.viewFront=function(){if(threeCamera&&threeControls){threeCamera.position.set(0,0.5,4);threeControls.target.set(0,0.3,0);threeControls.update();}};
-        window.viewTop=function(){if(threeCamera&&threeControls){threeCamera.position.set(0,4,0.01);threeControls.target.set(0,0.3,0);threeControls.update();}};
+        window.resetView=function(){if(threeCamera&&threeControls){threeControls.target.set(0,0.3,0);threeCamera.position.set(2.5,1.8,4);threeControls.update();}};
+        window.viewFront=function(){if(threeCamera&&threeControls){threeCamera.position.set(0,0.5,3);threeControls.target.set(0,0.3,0);threeControls.update();}};
+        window.viewTop=function(){if(threeCamera&&threeControls){threeCamera.position.set(0,3,0.01);threeControls.target.set(0,0.3,0);threeControls.update();}};
         
         window.guardarMaterial=function(){
             const id=document.getElementById('editId').value,cat=document.getElementById('catSelect').value;
-            const nombre=document.getElementById('nombreInput').value.trim(),cantidad=parseInt(document.getElementById('cantidadInput').value)||0;
-            const unidad=document.getElementById('unidadInput').value.trim()||'pza',min=parseInt(document.getElementById('minInput').value)||5;
+            const nombre=document.getElementById('nombreInput').value.trim();
+            const cantidad=parseInt(document.getElementById('cantidadInput').value)||0;
+            const unidad=document.getElementById('unidadInput').value.trim()||'pza';
+            const min=parseInt(document.getElementById('minInput').value)||5;
             const notas=document.getElementById('notasInput').value.trim();
             if(!nombre)return alert('⚠️ Nombre obligatorio');
             const med=obtenerMedidas3D(),datos={categoria:cat,nombre,cantidad,unidad,min,acabado:acabadoActual,notas,medidas:med};
@@ -414,28 +535,40 @@
             closeModal3D();renderDashboard();if(paginaActual==='inventario')renderInventario();
         };
         
-        // ==================== NAVEGACIÓN ====================
-        document.querySelectorAll('.nav-item').forEach(item=>{item.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));item.classList.add('active');paginaActual=item.dataset.page;document.getElementById('pageTitle').textContent=paginaActual==='dashboard'?'📊 Dashboard':paginaActual==='inventario'?'📦 Inventario':'🤖 Asistente IA';document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+paginaActual).classList.add('active');if(paginaActual==='dashboard')renderDashboard();if(paginaActual==='inventario')renderInventario();});});
+        // ==================== NAVEGACIÓN UNIFICADA ====================
+        function navegarA(page){
+            paginaActual=page;
+            document.querySelectorAll('.nav-item, .bn-item').forEach(i=>i.classList.remove('active'));
+            document.querySelectorAll(`[data-page="${page}"]`).forEach(i=>i.classList.add('active'));
+            document.getElementById('pageTitle').textContent=page==='dashboard'?'📊 Dashboard':page==='inventario'?'📦 Inventario':'🤖 Asistente';
+            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+            document.getElementById('page-'+page).classList.add('active');
+            if(page==='dashboard')renderDashboard();
+            if(page==='inventario')renderInventario();
+        }
+        
+        document.querySelectorAll('.nav-item, .bn-item').forEach(item=>{
+            item.addEventListener('click',()=>navegarA(item.dataset.page));
+        });
         
         // ==================== API KEY ====================
         window.toggleConfig=function(){document.getElementById('configBar').classList.toggle('hidden');};
         window.guardarKey=async function(){
             const key=document.getElementById('apiKeyInput').value.trim();
-            if(!key?.startsWith('gsk_'))return alert('API Key inválida');
+            if(!key?.startsWith('gsk_'))return alert('Key inválida');
             try{const r=await fetch('https://api.groq.com/openai/v1/models',{headers:{'Authorization':`Bearer ${key}`}});
-                if(r.ok){API_KEY=key;localStorage.setItem('hp_key_v3',key);document.getElementById('configBar').classList.add('hidden');document.getElementById('statusDot').className='status-dot on';document.getElementById('statusText').textContent='IA: Conectada';document.getElementById('btnAnalizar').disabled=false;}
+                if(r.ok){API_KEY=key;localStorage.setItem('hp_key_m',key);document.getElementById('configBar').classList.add('hidden');document.getElementById('statusDot').className='status-dot on';document.getElementById('statusText').textContent='IA: ON';document.getElementById('btnAnalizar').disabled=false;}
                 else alert('Key incorrecta');}
             catch(e){alert('Error de conexión');}
         };
-        if(API_KEY){document.getElementById('statusDot').className='status-dot on';document.getElementById('statusText').textContent='IA: Conectada';document.getElementById('btnAnalizar').disabled=false;document.getElementById('apiKeyInput').value=API_KEY;}
+        if(API_KEY){document.getElementById('statusDot').className='status-dot on';document.getElementById('statusText').textContent='IA: ON';document.getElementById('btnAnalizar').disabled=false;document.getElementById('apiKeyInput').value=API_KEY;}
         
         // ==================== DASHBOARD ====================
         function renderDashboard(){
             const total=materiales.length,bajo=materiales.filter(m=>m.cantidad<=m.min&&m.cantidad>0).length,agotado=materiales.filter(m=>m.cantidad===0).length;
-            const cats=[...new Set(materiales.map(m=>m.categoria))];
-            document.getElementById('statsGrid').innerHTML=`<div class="stat-card"><div class="num">${total}</div><div class="lbl">Total</div></div><div class="stat-card"><div class="num" style="color:#6ee7b7">${total-bajo-agotado}</div><div class="lbl">OK</div></div><div class="stat-card"><div class="num" style="color:#fdba74">${bajo}</div><div class="lbl">Bajo</div></div><div class="stat-card"><div class="num" style="color:#fca5a5">${agotado}</div><div class="lbl">Agotado</div></div>${cats.map(c=>`<div class="stat-card"><div class="num">${materiales.filter(m=>m.categoria===c).length}</div><div class="lbl">${c}</div></div>`).join('')}`;
+            document.getElementById('statsGrid').innerHTML=`<div class="stat-card"><div class="num">${total}</div><div class="lbl">Total</div></div><div class="stat-card"><div class="num" style="color:#6ee7b7">${total-bajo-agotado}</div><div class="lbl">OK</div></div><div class="stat-card"><div class="num" style="color:#fdba74">${bajo}</div><div class="lbl">Bajo</div></div><div class="stat-card"><div class="num" style="color:#fca5a5">${agotado}</div><div class="lbl">Agotado</div></div>`;
             const alerts=materiales.filter(m=>m.cantidad<=m.min);
-            document.getElementById('alertList').innerHTML=`<h3>⚠️ Alertas</h3>${alerts.length===0?'<p style="color:#888">✅ Todo en orden</p>':alerts.map(m=>`<div class="alert-item"><span>${m.nombre} (${m.cantidad} ${m.unidad})</span><span class="badge ${m.cantidad===0?'danger':'warn'}">${m.cantidad===0?'AGOTADO':'BAJO'}</span></div>`).join('')}`;
+            document.getElementById('alertList').innerHTML=`<h3>⚠️ Alertas</h3>${alerts.length===0?'<p style="color:#888">✅ Todo en orden</p>':alerts.map(m=>`<div class="alert-item"><span>${m.nombre} (${m.cantidad})</span><span class="badge ${m.cantidad===0?'danger':'warn'}">${m.cantidad===0?'AGOTADO':'BAJO'}</span></div>`).join('')}`;
         }
         
         // ==================== INVENTARIO ====================
@@ -444,7 +577,7 @@
             const cats=['Todos',...new Set(materiales.map(m=>m.categoria))];
             document.getElementById('filtroCat').innerHTML=cats.map(cat=>`<option ${c===cat?'selected':''}>${cat}</option>`).join('');
             const filtrados=materiales.filter(m=>(c==='Todos'||m.categoria===c)&&m.nombre.toLowerCase().includes(s));
-            document.getElementById('tablaInventario').innerHTML=`<thead><tr><th>Material</th><th>Cat</th><th>Cant</th><th>Mín</th><th>Estado</th><th>3D</th><th>Edit</th></tr></thead><tbody>${filtrados.map(m=>`<tr><td><b>${m.nombre}</b>${m.notas?`<br><small style="color:#888">${m.notas}</small>`:''}</td><td>${m.categoria}</td><td>${m.cantidad} ${m.unidad}</td><td>${m.min}</td><td><span class="badge ${m.cantidad===0?'danger':m.cantidad<=m.min?'warn':'ok'}">${m.cantidad===0?'AGOTADO':m.cantidad<=m.min?'BAJO':'OK'}</span></td><td><button class="btn-outline btn-sm" style="font-size:1rem">🧊</button></td><td><button class="btn-outline btn-sm">✏️</button></td></tr>`).join('')}</tbody>`;
+            document.getElementById('tablaInventario').innerHTML=`<thead><tr><th>Material</th><th>Cat</th><th>Cant</th><th>Estado</th><th>3D</th><th>✏️</th></tr></thead><tbody>${filtrados.map(m=>`<tr><td><b>${m.nombre}</b></td><td>${m.categoria}</td><td>${m.cantidad}</td><td><span class="badge ${m.cantidad===0?'danger':m.cantidad<=m.min?'warn':'ok'}">${m.cantidad===0?'AGOTADO':m.cantidad<=m.min?'BAJO':'OK'}</span></td><td><button class="btn-outline btn-sm">🧊</button></td><td><button class="btn-outline btn-sm">✏️</button></td></tr>`).join('')}</tbody>`;
             document.querySelectorAll('#tablaInventario tbody tr').forEach((row,i)=>{const m=filtrados[i],btns=row.querySelectorAll('button');btns[0].onclick=()=>window.abrirModal3D(m);btns[1].onclick=()=>editarCantidad(m.id);});
         }
         function editarCantidad(id){const m=materiales.find(m=>m.id===id);if(!m)return;const n=parseInt(prompt(`Cantidad de ${m.nombre}:`,m.cantidad));if(!isNaN(n)){m.cantidad=n;renderInventario();renderDashboard();}}
@@ -452,194 +585,80 @@
         
         // ==================== CÁMARA ====================
         document.getElementById('fileInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{imagenActual=ev.target.result;mostrarPreview(imagenActual);};r.readAsDataURL(f);});
-        window.abrirCamara=async function(){try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});const v=document.getElementById('cameraPreview');v.srcObject=stream;v.style.display='block';document.getElementById('previewImage').style.display='none';document.getElementById('camPlaceholder').style.display='none';document.getElementById('btnCapturar').style.display='inline-block';}catch(err){alert('No se pudo abrir cámara');}};
-        window.capturarFoto=function(){const v=document.getElementById('cameraPreview'),c=document.getElementById('photoCanvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);imagenActual=c.toDataURL('image/jpeg',0.8);mostrarPreview(imagenActual);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}document.getElementById('btnCapturar').style.display='none';};
+        window.abrirCamara=async function(){try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}});const v=document.getElementById('cameraPreview');v.srcObject=stream;v.style.display='block';document.getElementById('previewImage').style.display='none';document.getElementById('camPlaceholder').style.display='none';document.getElementById('btnCapturar').style.display='inline-block';}catch(err){alert('No se pudo abrir cámara');}};
+        window.capturarFoto=function(){const v=document.getElementById('cameraPreview'),c=document.getElementById('photoCanvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);imagenActual=c.toDataURL('image/jpeg',0.7);mostrarPreview(imagenActual);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}document.getElementById('btnCapturar').style.display='none';};
         function mostrarPreview(src){document.getElementById('previewImage').src=src;document.getElementById('previewImage').style.display='block';document.getElementById('cameraPreview').style.display='none';document.getElementById('camPlaceholder').style.display='none';document.getElementById('btnAnalizar').disabled=!API_KEY;}
         
-        // ==================== IA CON GESTIÓN DE INVENTARIO ====================
-        window.analizarFoto=async function(){
-            if(!API_KEY||!imagenActual)return;
-            agregarMsg('user','📸 [Foto]');agregarMsg('sys','🔍 Analizando...');
-            const prompt=`Eres MAESTRO HERRERO. Analiza esta imagen. INVENTARIO:${materiales.map(m=>`${m.nombre}:${m.cantidad}${m.unidad}`).join('|')}`;
-            try{const r=await llamarIA(prompt,imagenActual);quitarCargando();agregarMsg('ai',r);}catch(e){quitarCargando();agregarMsg('sys','❌ '+e.message);}
-        };
+        // ==================== IA ====================
+        window.analizarFoto=async function(){if(!API_KEY||!imagenActual)return;agregarMsg('user','📸 [Foto]');agregarMsg('sys','🔍 Analizando...');try{const r=await llamarIA('Eres MAESTRO HERRERO. Analiza esta imagen. Inventario:'+materiales.map(m=>`${m.nombre}:${m.cantidad}`).join('|'),imagenActual);quitarCargando();agregarMsg('ai',r);}catch(e){quitarCargando();agregarMsg('sys','❌ '+e.message);}};
         
         window.preguntar=async function(txt){
             const inp=document.getElementById('preguntaInput');
             const p=txt||inp.value.trim();
             if(!p||!API_KEY)return;
-            agregarMsg('user',p);if(!txt)inp.value='';agregarMsg('sys','💭 Procesando...');
-            
-            const inventarioStr=materiales.map(m=>`ID:${m.id} | ${m.nombre} | ${m.categoria} | Stock:${m.cantidad} ${m.unidad} | Mín:${m.min}`).join('\n');
-            
-            const prompt=`Eres un ASISTENTE DE INVENTARIO de un taller de herrería. Tu trabajo es:
-1. Si el usuario dice que USÓ materiales → RESTA del inventario
-2. Si el usuario dice que AGREGÓ materiales → SUMA al inventario
-3. Si el usuario pregunta por STOCK → Consulta y responde
-4. Si es pregunta técnica → Responde normalmente
-
-INVENTARIO ACTUAL:
-${inventarioStr}
-
-MENSAJE DEL USUARIO: "${p}"
-
-INSTRUCCIONES:
-- Si es una operación de inventario (usar, agregar, quitar), responde SOLO en formato JSON:
-  {"accion":"usar","items":[{"id":1,"cantidad":3},{"id":3,"cantidad":2}],"respuesta":"Desconté 3 PTR 2×2 y 2 Láminas Negras"}
-  
-  {"accion":"agregar","items":[{"id":5,"cantidad":20}],"respuesta":"Agregué 20 Varillas 3/8"}
-  
-  {"accion":"pregunta","respuesta":"Tienes 45 PTR 2×2 en stock"}
-
-- Si detectas un material pero no coincide exactamente, busca el más parecido por nombre o categoría
-- Para "PTR 2×2" busca "PTR 2×2"
-- Para "varilla 3/8" busca "Varilla 3/8"
-- Para "lámina negra" busca "Lámina Negra"
-- Si no encuentras el material exacto, di que no lo encontraste
-
-- Si es pregunta técnica (machuelos, soldadura, etc.), responde normal sin JSON`;
-
+            agregarMsg('user',p);if(!txt)inp.value='';agregarMsg('sys','💭...');
+            const invStr=materiales.map(m=>`ID:${m.id}|${m.nombre}|Stock:${m.cantidad}${m.unidad}`).join('\n');
+            const prompt=`Eres ASISTENTE DE INVENTARIO de herrería. Si el usuario dice que USÓ/AGREGÓ/QUITÓ materiales, responde SOLO con JSON: {"accion":"usar","items":[{"id":1,"cantidad":3}],"respuesta":"OK"} o {"accion":"agregar","items":[{"id":5,"cantidad":20}],"respuesta":"OK"}. Si pregunta por stock: {"accion":"pregunta","respuesta":"..."}. Si es pregunta técnica, responde normal.\n\nINVENTARIO:\n${invStr}\n\nUSUARIO: "${p}"`;
             try{
                 const resp=await llamarIA(prompt,null);
                 quitarCargando();
-                
-                // Intentar parsear JSON
                 try{
                     const json=JSON.parse(resp);
                     if(json.accion==='usar'||json.accion==='agregar'){
-                        let cambios=[];
                         for(let item of json.items){
                             const m=materiales.find(m=>m.id===item.id);
-                            if(m){
-                                if(json.accion==='usar')m.cantidad=Math.max(0,m.cantidad-item.cantidad);
-                                else m.cantidad+=item.cantidad;
-                                cambios.push(`${json.accion==='usar'?'➖':'➕'} ${m.nombre}: ${m.cantidad} ${m.unidad}`);
-                            }
+                            if(m){m.cantidad=json.accion==='usar'?Math.max(0,m.cantidad-item.cantidad):m.cantidad+item.cantidad;}
                         }
-                        agregarMsg('action',cambios.join('\n'));
-                        agregarMsg('ai',json.respuesta||'✅ Inventario actualizado');
-                        renderDashboard();
-                        if(paginaActual==='inventario')renderInventario();
-                    }else{
-                        agregarMsg('ai',json.respuesta||resp);
-                    }
-                }catch(e){
-                    // No es JSON, mostrar como respuesta normal
-                    agregarMsg('ai',resp);
-                    
-                    // También intentar detectar cambios simples en el texto
-                    detectarCambiosLocales(p);
-                }
-            }catch(e){
-                quitarCargando();
-                agregarMsg('sys','❌ '+e.message);
-                // Si falla la IA, intentar detección local
-                detectarCambiosLocales(p);
-            }
+                        agregarMsg('action',json.respuesta||'✅ Inventario actualizado');
+                        renderDashboard();if(paginaActual==='inventario')renderInventario();
+                    }else{agregarMsg('ai',json.respuesta||resp);}
+                }catch(e){agregarMsg('ai',resp);detectarCambiosLocales(p);}
+            }catch(e){quitarCargando();agregarMsg('sys','❌ '+e.message);detectarCambiosLocales(p);}
         };
         
         function detectarCambiosLocales(texto){
-            const t=texto.toLowerCase();
-            let cambios=[];
-            
-            // Patrones comunes
+            const t=texto.toLowerCase();let cambios=[];
             const patrones=[
-                // "Usé X NOMBRE"
-                {regex:/us[ée]\s+(\d+)\s+(ptr\s*2\s*[x×]\s*2|ptr\s*1\s*[x×]\s*1|lamina\s+negra|varilla\s+3\/8|angular\s+1|electrodo\s+6013|flecha\s+1\/2|tubo\s+redondo\s+2|tubo\s+ligero)/i,accion:'usar'},
-                // "Quita X NOMBRE"  
-                {regex:/quita\s+(\d+)\s+(ptr\s*2\s*[x×]\s*2|ptr\s*1\s*[x×]\s*1|lamina\s+negra|varilla\s+3\/8|angular\s+1|electrodo\s+6013|flecha\s+1\/2|tubo\s+redondo\s+2|tubo\s+ligero)/i,accion:'usar'},
-                // "Agrega X NOMBRE"
-                {regex:/agrega\s+(\d+)\s+(ptr\s*2\s*[x×]\s*2|ptr\s*1\s*[x×]\s*1|lamina\s+negra|varilla\s+3\/8|angular\s+1|electrodo\s+6013|flecha\s+1\/2|tubo\s+redondo\s+2|tubo\s+ligero)/i,accion:'agregar'},
+                {regex:/us[ée]\s+(\d+)\s+(ptr\s*2|ptr\s*1|lamina|varilla|angular|electrodo|flecha|tubo)/i,accion:'usar'},
+                {regex:/quita\s+(\d+)\s+(ptr\s*2|ptr\s*1|lamina|varilla|angular|electrodo|flecha|tubo)/i,accion:'usar'},
+                {regex:/agrega\s+(\d+)\s+(ptr\s*2|ptr\s*1|lamina|varilla|angular|electrodo|flecha|tubo)/i,accion:'agregar'},
             ];
-            
             for(let p of patrones){
                 const match=texto.match(p.regex);
                 if(match){
-                    const cantidad=parseInt(match[1]);
-                    const nombreBuscar=match[2].toLowerCase();
-                    
-                    const encontrado=materiales.find(m=>
-                        m.nombre.toLowerCase().includes(nombreBuscar)||
-                        nombreBuscar.includes(m.nombre.toLowerCase().substring(0,10))
-                    );
-                    
-                    if(encontrado){
-                        if(p.accion==='usar')encontrado.cantidad=Math.max(0,encontrado.cantidad-cantidad);
-                        else encontrado.cantidad+=cantidad;
-                        cambios.push(`${p.accion==='usar'?'➖':'➕'} ${encontrado.nombre}: ${encontrado.cantidad} ${encontrado.unidad}`);
-                    }
-                    break;
+                    const cantidad=parseInt(match[1]),buscar=match[2];
+                    const m=materiales.find(m=>m.nombre.toLowerCase().includes(buscar)||buscar.includes(m.nombre.toLowerCase().substring(0,8)));
+                    if(m){m.cantidad=p.accion==='usar'?Math.max(0,m.cantidad-cantidad):m.cantidad+cantidad;cambios.push(`${p.accion==='usar'?'➖':'➕'} ${m.nombre}: ${m.cantidad}`);break;}
                 }
             }
-            
-            if(cambios.length>0){
-                agregarMsg('action',cambios.join('\n'));
-                renderDashboard();
-                if(paginaActual==='inventario')renderInventario();
-            }
+            if(cambios.length>0){agregarMsg('action',cambios.join('\n'));renderDashboard();if(paginaActual==='inventario')renderInventario();}
         }
         
         async function llamarIA(prompt,img){
             const msgs=[];
             if(img)msgs.push({role:"user",content:[{type:"text",text:prompt},{type:"image_url",image_url:{url:img}}]});
             else msgs.push({role:"user",content:prompt});
-            const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({model:'meta-llama/llama-4-scout-17b-16e-instruct',messages:msgs,max_tokens:2000,temperature:0.3})});
-            if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'Error');}
-            const d=await r.json();return d.choices[0].message.content;
+            const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({model:'meta-llama/llama-4-scout-17b-16e-instruct',messages:msgs,max_tokens:1500,temperature:0.3})});
+            if(!r.ok)throw new Error((await r.json().catch(()=>({})))?.error?.message||'Error');
+            return (await r.json()).choices[0].message.content;
         }
         
         function agregarMsg(tipo,txt){const c=document.getElementById('chatMessages'),d=document.createElement('div');d.className='msg '+tipo;d.innerHTML=txt;c.appendChild(d);d.scrollIntoView({behavior:'smooth'});}
-        function quitarCargando(){const msgs=document.getElementById('chatMessages').children;for(let m of msgs)if(m.textContent.includes('Procesando')||m.textContent.includes('Analizando')){m.remove();break;}}
+        function quitarCargando(){const msgs=document.getElementById('chatMessages').children;for(let m of msgs)if(m.textContent.includes('💭')||m.textContent.includes('🔍')){m.remove();break;}}
         
         // ==================== VOZ ====================
         window.toggleVoz=function(){
             const btn=document.getElementById('btnVoice');
-            if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
-                alert('Tu navegador no soporta voz. Usa Chrome.');
-                return;
-            }
-            
-            const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-            
+            const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+            if(!SR)return alert('Usa Chrome para voz');
             if(!recognition){
-                recognition=new SpeechRecognition();
-                recognition.lang='es-MX';
-                recognition.continuous=false;
-                recognition.interimResults=false;
-                
-                recognition.onresult=(e)=>{
-                    const texto=e.results[0][0].transcript;
-                    document.getElementById('preguntaInput').value=texto;
-                    btn.classList.remove('listening');
-                    btn.textContent='🎤 Voz';
-                    escuchando=false;
-                    preguntar(texto);
-                };
-                
-                recognition.onerror=()=>{
-                    btn.classList.remove('listening');
-                    btn.textContent='🎤 Voz';
-                    escuchando=false;
-                };
-                
-                recognition.onend=()=>{
-                    btn.classList.remove('listening');
-                    btn.textContent='🎤 Voz';
-                    escuchando=false;
-                };
+                recognition=new SR();recognition.lang='es-MX';recognition.continuous=false;
+                recognition.onresult=e=>{document.getElementById('preguntaInput').value=e.results[0][0].transcript;btn.classList.remove('listening');btn.textContent='🎤';escuchando=false;preguntar();};
+                recognition.onerror=()=>{btn.classList.remove('listening');btn.textContent='🎤';escuchando=false;};
+                recognition.onend=()=>{btn.classList.remove('listening');btn.textContent='🎤';escuchando=false;};
             }
-            
-            if(escuchando){
-                recognition.stop();
-                btn.classList.remove('listening');
-                btn.textContent='🎤 Voz';
-                escuchando=false;
-            }else{
-                recognition.start();
-                btn.classList.add('listening');
-                btn.textContent='🔴 Escuchando...';
-                escuchando=true;
-            }
+            if(escuchando){recognition.stop();btn.classList.remove('listening');btn.textContent='🎤';escuchando=false;}
+            else{recognition.start();btn.classList.add('listening');btn.textContent='🔴';escuchando=true;}
         };
         
         renderDashboard();
