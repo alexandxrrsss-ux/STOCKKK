@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>HerreriaPRO · Sistema Completo</title>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+        body{background:#1a1a1a;color:#e0e0e0;height:100vh;display:flex;overflow:hidden}
+        
+        .sidebar{width:200px;background:#252525;padding:1rem;display:flex;flex-direction:column;gap:0.3rem;border-right:2px solid #333;flex-shrink:0}
+        .logo{font-size:1.3rem;font-weight:800;color:#f97316;text-align:center;margin-bottom:1rem}
+        .nav-item{padding:0.8rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:0.5rem;color:#999;font-size:0.85rem;transition:0.2s}
+        .nav-item:hover{background:#333;color:#f97316}
+        .nav-item.active{background:#f97316;color:#000;font-weight:700}
+        .nav-item i{font-style:normal;font-size:1.1rem}
+        
+        .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+        .topbar{background:#252525;padding:0.7rem 1.5rem;border-bottom:2px solid #333;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem}
+        .topbar h1{font-size:1.2rem;color:#f97316}
+        .topbar-right{display:flex;align-items:center;gap:0.8rem}
+        .status-dot{width:7px;height:7px;border-radius:50%}
+        .status-dot.on{background:#6ee7b7;box-shadow:0 0 5px #6ee7b7}
+        .status-dot.off{background:#ef4444}
+        .content{flex:1;overflow-y:auto;padding:1rem}
+        
+        .page{display:none}
+        .page.active{display:block}
+        
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.8rem;margin-bottom:1.5rem}
+        .stat-card{background:#2a2a2a;border:1px solid #333;border-radius:12px;padding:1rem;text-align:center}
+        .stat-card .num{font-size:2rem;font-weight:800;color:#f97316}
+        .stat-card .lbl{font-size:0.7rem;color:#888;text-transform:uppercase;margin-top:0.3rem}
+        
+        .alert-list{background:#2a2a2a;border:1px solid #333;border-radius:12px;padding:1rem}
+        .alert-list h3{color:#f97316;margin-bottom:0.8rem;font-size:0.9rem}
+        .alert-item{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid #333;font-size:0.85rem}
+        .badge{padding:0.2rem 0.5rem;border-radius:12px;font-size:0.7rem;font-weight:700}
+        .badge.warn{background:#7c2d12;color:#fdba74}
+        .badge.danger{background:#450a0a;color:#fca5a5}
+        .badge.ok{background:#065f46;color:#6ee7b7}
+        .badge.info{background:#1a3a5c;color:#93c5fd}
+        
+        table{width:100%;border-collapse:collapse;background:#2a2a2a;border-radius:12px;overflow:hidden;font-size:0.85rem}
+        th{background:#1a1a1a;color:#f97316;font-size:0.7rem;text-transform:uppercase;padding:0.7rem;text-align:left}
+        td{padding:0.7rem;border-bottom:1px solid #333}
+        tr:hover td{background:#333}
+        
+        .btn{background:#f97316;color:#000;border:none;padding:0.5rem 1rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem}
+        .btn:hover{background:#fb923c}
+        .btn-outline{background:transparent;border:1px solid #f97316;color:#f97316;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.8rem}
+        .btn-sm{padding:0.3rem 0.7rem;font-size:0.7rem}
+        .btn-voice{background:#10b981;color:#fff;border:none;padding:0.5rem 1rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem;animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.4)}70%{box-shadow:0 0 0 10px rgba(16,185,129,0)}}
+        .btn-voice.listening{background:#ef4444;animation:none}
+        
+        .inv-header{display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+        .inv-header input{flex:1;padding:0.6rem;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;min-width:200px}
+        .inv-header select{padding:0.6rem;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff}
+        
+        .asistente-layout{display:grid;grid-template-columns:1fr 1fr;gap:1rem;height:calc(100vh - 140px)}
+        .panel{background:#2a2a2a;border:1px solid #333;border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+        .panel h3{color:#f97316;padding:0.8rem 1rem;border-bottom:1px solid #333;font-size:0.9rem;display:flex;justify-content:space-between;align-items:center}
+        .panel-body{flex:1;overflow-y:auto;padding:0.8rem}
+        .camera-area{display:flex;flex-direction:column;align-items:center;gap:0.5rem}
+        .camera-area img,.camera-area video{max-height:180px;border-radius:8px;display:none}
+        .placeholder{color:#666;text-align:center;padding:2rem}
+        .chat-msgs{display:flex;flex-direction:column;gap:0.6rem}
+        .msg{padding:0.6rem;border-radius:8px;font-size:0.8rem;line-height:1.4;max-width:90%}
+        .msg.user{background:#f97316;color:#000;align-self:flex-end}
+        .msg.ai{background:#333;color:#e0e0e0;align-self:flex-start;border-left:3px solid #f97316;white-space:pre-wrap}
+        .msg.sys{background:#1a2a1a;color:#6ee7b7;align-self:center;font-size:0.75rem}
+        .msg.action{background:#1a3a5c;color:#93c5fd;align-self:center;font-size:0.75rem;border:1px solid #3b82f6}
+        .chat-input{display:flex;gap:0.4rem;padding:0.8rem;border-top:1px solid #333}
+        .chat-input input{flex:1;padding:0.6rem;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;font-size:0.85rem}
+        
+        .config-bar{background:#2a2a2a;border:2px solid #f97316;border-radius:10px;padding:0.8rem 1rem;margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap}
+        .config-bar.hidden{display:none}
+        .config-bar input{flex:1;padding:0.5rem;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#fff;font-family:monospace;min-width:200px}
+        
+        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;z-index:1000;visibility:hidden;opacity:0;transition:0.2s}
+        .modal-overlay.active{visibility:visible;opacity:1}
+        .modal{background:#1a1a1a;border:2px solid #333;border-radius:16px;width:95vw;height:90vh;display:flex;flex-direction:column;overflow:hidden}
+        .modal-body{display:flex;flex:1;overflow:hidden}
+        .modal-left{width:380px;min-width:380px;background:#252525;padding:1.5rem;overflow-y:auto;border-right:2px solid #333}
+        .modal-left h2{font-size:1.4rem;margin-bottom:1rem;color:#f97316}
+        .modal-right{flex:1;position:relative;background:#d4cfc4}
+        #three-container{width:100%;height:100%;cursor:grab}
+        #three-container:active{cursor:grabbing}
+        .info-overlay{position:absolute;top:15px;left:15px;z-index:10;display:flex;flex-direction:column;gap:0.4rem}
+        .cat-badge{background:#f97316;color:#000;padding:0.4rem 1rem;border-radius:6px;font-weight:800;font-size:0.9rem}
+        .med-badge{background:rgba(0,0,0,0.7);color:#fff;padding:0.3rem 0.8rem;border-radius:6px;font-size:0.75rem}
+        .controls-help{position:absolute;bottom:15px;left:15px;color:#555;font-size:0.7rem;z-index:10;background:rgba(255,255,255,0.8);padding:0.3rem 0.8rem;border-radius:4px}
+        .view-btns{position:absolute;bottom:15px;right:15px;display:flex;gap:0.3rem;z-index:10}
+        .view-btn{background:rgba(0,0,0,0.6);border:1px solid #666;color:#fff;padding:0.4rem 0.8rem;border-radius:6px;cursor:pointer;font-size:0.7rem}
+        
+        .form-group{margin-bottom:0.8rem}
+        .form-group label{display:block;color:#aaa;font-size:0.75rem;margin-bottom:0.2rem;font-weight:600}
+        .form-group input,.form-group select{width:100%;padding:0.6rem;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#fff;font-size:0.85rem}
+        .dim-row{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem}
+        .acabado-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem}
+        .acabado-btn{padding:0.5rem;border-radius:6px;border:2px solid #333;background:#1a1a1a;color:#999;cursor:pointer;text-align:center;font-size:0.7rem;font-weight:600;transition:0.2s}
+        .acabado-btn.activo{border-color:#f97316;color:#f97316;background:#2a1a0a}
+        .acabado-btn:hover{border-color:#f97316}
+        .form-actions{display:flex;gap:0.5rem;margin-top:1rem}
+        
+        @media(max-width:768px){
+            .sidebar{display:none}
+            .asistente-layout{grid-template-columns:1fr;height:auto}
+            .modal{flex-direction:column;width:100vw;height:100vh;border-radius:0}
+            .modal-body{flex-direction:column}
+            .modal-left{width:100%;min-width:100%;height:50%;border-right:none;border-bottom:2px solid #333}
+            .modal-right{height:50%}
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo">⚒️ HERRERIAPRO</div>
+        <div class="nav-item active" data-page="dashboard"><i>📊</i> Dashboard</div>
+        <div class="nav-item" data-page="inventario"><i>📦</i> Inventario</div>
+        <div class="nav-item" data-page="asistente"><i>🤖</i> Asistente IA</div>
+    </div>
+    
+    <div class="main">
+        <div class="topbar">
+            <h1 id="pageTitle">📊 Dashboard</h1>
+            <div class="topbar-right">
+                <span style="font-size:0.7rem;color:#888" id="statusText">IA: Sin conectar</span>
+                <span class="status-dot off" id="statusDot"></span>
+                <button class="btn-sm btn-outline" onclick="toggleConfig()">🔑 Key</button>
+            </div>
+        </div>
+        
+        <div class="config-bar hidden" id="configBar">
+            <span>🔑</span>
+            <input type="password" id="apiKeyInput" placeholder="API Key de Groq (gsk_...)">
+            <button class="btn btn-sm" onclick="guardarKey()">Conectar</button>
+        </div>
+        
+        <div class="content">
+            <div class="page active" id="page-dashboard">
+                <div class="stats-grid" id="statsGrid"></div>
+                <div class="alert-list" id="alertList"></div>
+            </div>
+            
+            <div class="page" id="page-inventario">
+                <div class="inv-header">
+                    <input type="text" id="searchInv" placeholder="🔍 Buscar material..." oninput="renderInventario()">
+                    <select id="filtroCat" onchange="renderInventario()"><option>Todos</option></select>
+                    <button class="btn btn-sm" onclick="abrirModal3D()">➕ Nuevo</button>
+                </div>
+                <div style="overflow-x:auto"><table id="tablaInventario"></table></div>
+            </div>
+            
+            <div class="page" id="page-asistente">
+                <div class="asistente-layout">
+                    <div class="panel">
+                        <h3>📸 Captura</h3>
+                        <div class="panel-body">
+                            <div class="camera-area">
+                                <video id="cameraPreview" autoplay playsinline></video>
+                                <img id="previewImage" alt="Preview">
+                                <canvas id="photoCanvas" style="display:none"></canvas>
+                                <div class="placeholder" id="camPlaceholder">📷<br>Toma o sube una foto</div>
+                                <div style="display:flex;gap:0.4rem;flex-wrap:wrap;justify-content:center">
+                                    <button class="btn btn-sm" onclick="abrirCamara()">📸 Cámara</button>
+                                    <button class="btn-outline btn-sm" onclick="document.getElementById('fileInput').click()">📁 Subir</button>
+                                    <button class="btn btn-sm" id="btnAnalizar" onclick="analizarFoto()" disabled>🔍 Analizar</button>
+                                    <button class="btn-outline btn-sm" id="btnCapturar" onclick="capturarFoto()" style="display:none">📷 Capturar</button>
+                                </div>
+                                <input type="file" id="fileInput" accept="image/*" style="display:none">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h3>
+                            💬 Consultas
+                            <span style="display:flex;gap:0.3rem">
+                                <button class="btn-sm btn-voice" id="btnVoice" onclick="toggleVoz()">🎤 Voz</button>
+                            </span>
+                        </h3>
+                        <div class="panel-body"><div class="chat-msgs" id="chatMessages">
+                            <div class="msg ai">
+                                👋 <b>¡Hola, Lo!</b><br><br>
+                                Puedo <b>gestionar tu inventario</b> por texto o voz:<br><br>
+                                🗣️ <b>Ejemplos:</b><br>
+                                • "Usé 5 PTR 2×2 para el portón"<br>
+                                • "Agrega 10 láminas galvanizadas"<br>
+                                • "Quita 3 varillas 3/8"<br>
+                                • "Ya no tengo angular 1 pulgada"<br>
+                                • "Pon 50 electrodos 6013"<br><br>
+                                <b>Pega tu API Key y dime qué necesitas.</b>
+                            </div>
+                        </div></div>
+                        <div style="padding:0 0.8rem 0.5rem;display:flex;gap:0.3rem;flex-wrap:wrap">
+                            <button class="btn-outline btn-sm" onclick="preguntar('Usé 3 PTR 2×2 y 2 láminas negras')">📦 Registrar uso</button>
+                            <button class="btn-outline btn-sm" onclick="preguntar('Agrega 20 varillas 3/8 al inventario')">➕ Agregar stock</button>
+                            <button class="btn-outline btn-sm" onclick="preguntar('¿Cuánto PTR me queda?')">📋 Consultar stock</button>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" id="preguntaInput" placeholder="Di qué material usaste o necesitas..." onkeypress="if(event.key==='Enter')preguntar()">
+                            <button class="btn btn-sm" onclick="preguntar()">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL 3D -->
+    <div class="modal-overlay" id="modalMaterial">
+        <div class="modal">
+            <div class="modal-body">
+                <div class="modal-left">
+                    <h2 id="modalTitle">🆕 Nuevo Material</h2>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="catSelect" onchange="cambioCategoria()">
+                            <option value="PTR">🟫 PTR</option><option value="Redondo">🔴 Tubo Cédula</option><option value="Tubo Ligero">🪈 Tubo Ligero</option>
+                            <option value="Lámina">📄 Lámina</option><option value="Varilla">〰️ Varilla</option><option value="Flecha">🔩 Flecha</option>
+                            <option value="Angular">📐 Angular</option><option value="Electrodo">⚡ Electrodo</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Nombre</label><input type="text" id="nombreInput" placeholder="Nombre del material"></div>
+                    <div id="dimensionesContainer"></div>
+                    <div class="form-group">
+                        <label>Acabado</label>
+                        <div class="acabado-grid">
+                            <div class="acabado-btn activo" data-acabado="inox">✨ Inox</div>
+                            <div class="acabado-btn" data-acabado="carbon">🔩 Carbón</div>
+                            <div class="acabado-btn" data-acabado="galvanizado">🔧 Galv</div>
+                            <div class="acabado-btn" data-acabado="negro">🖤 Negro</div>
+                        </div>
+                    </div>
+                    <div class="dim-row">
+                        <div class="form-group"><label>Cantidad</label><input type="number" id="cantidadInput" min="0" value="0"></div>
+                        <div class="form-group"><label>Unidad</label><input type="text" id="unidadInput" value="pza"></div>
+                    </div>
+                    <div class="form-group"><label>Stock Mín</label><input type="number" id="minInput" min="0" value="5"></div>
+                    <div class="form-group"><label>Notas</label><input type="text" id="notasInput" placeholder="Calibre, uso..."></div>
+                    <input type="hidden" id="editId">
+                    <div class="form-actions">
+                        <button class="btn-outline" onclick="closeModal3D()">Cancelar</button>
+                        <button class="btn" onclick="guardarMaterial()">💾 Guardar</button>
+                    </div>
+                </div>
+                <div class="modal-right">
+                    <div id="three-container">
+                        <div class="info-overlay">
+                            <span class="cat-badge" id="catLabel3D">PTR</span>
+                            <span class="med-badge" id="medLabel3D">2" × 2" × 6m</span>
+                        </div>
+                        <div class="controls-help">🖱️ Arrastra para girar | Rueda zoom</div>
+                        <div class="view-btns">
+                            <button class="view-btn" onclick="resetView()">🔄</button>
+                            <button class="view-btn" onclick="viewFront()">📷</button>
+                            <button class="view-btn" onclick="viewTop()">📐</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        
+        let materiales = [
+            {id:1,categoria:'PTR',nombre:'PTR 2×2 cal 14',cantidad:45,unidad:'pza',min:10,acabado:'inox',notas:'',medidas:{ladoA:0.0508,ladoB:0.0508,espesor:0.0019,largo:6}},
+            {id:2,categoria:'Redondo',nombre:'Tubo Redondo 2" céd 40',cantidad:25,unidad:'pza',min:10,acabado:'carbon',notas:'Cédula 40',medidas:{diametro:0.0603,espesor:0.00391,largo:6}},
+            {id:3,categoria:'Lámina',nombre:'Lámina Negra 3mm',cantidad:12,unidad:'hoja',min:5,acabado:'carbon',notas:'',medidas:{largo:2.44,ancho:1.22,espesor:0.003}},
+            {id:4,categoria:'Flecha',nombre:'Flecha 1/2"',cantidad:80,unidad:'pza',min:30,acabado:'negro',notas:'',medidas:{diametro:0.0127,largo:12}},
+            {id:5,categoria:'Varilla',nombre:'Varilla 3/8 Inox',cantidad:60,unidad:'pza',min:20,acabado:'inox',notas:'',medidas:{diametro:0.0095,largo:12}},
+            {id:6,categoria:'Angular',nombre:'Angular 1"×1/8',cantidad:0,unidad:'pza',min:10,acabado:'carbon',notas:'',medidas:{alaA:0.0254,alaB:0.0254,espesor:0.003175,largo:6}},
+            {id:7,categoria:'Electrodo',nombre:'Electrodo 6013 1/8',cantidad:200,unidad:'pza',min:50,acabado:'carbon',notas:'',medidas:{diametro:0.0032,largo:0.35}},
+            {id:8,categoria:'Tubo Ligero',nombre:'Tubo Redondo 1 1/2" ligero',cantidad:50,unidad:'pza',min:20,acabado:'negro',notas:'Cal 18',medidas:{diametro:0.0483,espesor:0.0012,largo:6}},
+        ];
+        
+        let API_KEY = localStorage.getItem('hp_key_v3') || '';
+        let imagenActual = null, stream = null, paginaActual = 'dashboard', acabadoActual = 'inox';
+        let recognition = null, escuchando = false;
+        
+        // ==================== 3D ====================
+        let threeScene, threeCamera, threeRenderer, threeControls, currentMesh;
+        
+        function initThree() {
+            const c = document.getElementById('three-container');
+            if(!c||threeScene) return;
+            threeScene = new THREE.Scene(); threeScene.background = new THREE.Color(0xd4cfc4);
+            threeCamera = new THREE.PerspectiveCamera(50,c.clientWidth/c.clientHeight,0.01,100); threeCamera.position.set(3,2,5);
+            threeRenderer = new THREE.WebGLRenderer({antialias:true}); threeRenderer.setSize(c.clientWidth,c.clientHeight);
+            threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2)); threeRenderer.shadowMap.enabled = true;
+            c.appendChild(threeRenderer.domElement);
+            threeControls = new OrbitControls(threeCamera,threeRenderer.domElement); threeControls.enableDamping=true; threeControls.target.set(0,0.3,0);
+            threeScene.add(new THREE.AmbientLight(0xffffff,0.7));
+            const k = new THREE.DirectionalLight(0xffffff,1.5); k.position.set(5,8,5); k.castShadow=true; threeScene.add(k);
+            threeScene.add(new THREE.DirectionalLight(0x8899cc,0.5)).position.set(-3,1,-2);
+            const f = new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:0xc8c0b0,roughness:0.8}));
+            f.rotation.x=-Math.PI/2; f.position.y=-1; f.receiveShadow=true; threeScene.add(f);
+            const g = new THREE.GridHelper(8,30,0x999999,0xcccccc); g.position.y=-0.99; threeScene.add(g);
+            animate3D();
+        }
+        function animate3D(){requestAnimationFrame(animate3D);if(threeControls)threeControls.update();if(threeRenderer&&threeScene&&threeCamera)threeRenderer.render(threeScene,threeCamera);}
+        function clearMesh(){if(currentMesh){threeScene.remove(currentMesh);currentMesh.geometry?.dispose();currentMesh.material?.dispose?.();currentMesh=null;}}
+        function getMaterial(a){const m={inox:new THREE.MeshStandardMaterial({color:0xd0d0d8,roughness:0.25,metalness:0.95}),galvanizado:new THREE.MeshStandardMaterial({color:0xb8bcc0,roughness:0.35,metalness:0.8}),negro:new THREE.MeshStandardMaterial({color:0x3a3a3a,roughness:0.5,metalness:0.6}),carbon:new THREE.MeshStandardMaterial({color:0x6a6a6a,roughness:0.55,metalness:0.5})};return m[a]||m.carbon;}
+        
+        function crearGeometria(cat,med,acabado){
+            const mat=getMaterial(acabado);let geo;
+            switch(cat){
+                case'Lámina':geo=new THREE.BoxGeometry(med.espesor,med.largo,med.ancho);break;
+                case'PTR':geo=new THREE.BoxGeometry(med.ladoA,med.ladoB,med.largo||6);break;
+                case'Redondo':case'Tubo Ligero':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||6,32);break;
+                case'Varilla':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||12,32);break;
+                case'Flecha':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||12,8);break;
+                case'Angular':const s=new THREE.Shape();s.moveTo(0,0);s.lineTo(med.alaA,0);s.lineTo(med.alaA,med.espesor);s.lineTo(med.espesor,med.espesor);s.lineTo(med.espesor,med.alaB);s.lineTo(0,med.alaB);s.closePath();geo=new THREE.ExtrudeGeometry(s,{steps:1,depth:med.largo||6,bevelEnabled:true,bevelThickness:0.001,bevelSize:0.001});geo.translate(-med.alaA/2,-med.alaB/2,-(med.largo||6)/2);break;
+                case'Electrodo':geo=new THREE.CylinderGeometry(med.diametro/2,med.diametro/2,med.largo||0.35,16);break;
+                default:geo=new THREE.BoxGeometry(0.1,0.1,0.1);
+            }
+            const mesh=new THREE.Mesh(geo,mat);mesh.castShadow=true;mesh.receiveShadow=true;
+            const edges=new THREE.EdgesGeometry(geo);mesh.add(new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:0x000000,transparent:true,opacity:0.15})));
+            return mesh;
+        }
+        
+        function update3D(){
+            if(!threeScene)return;
+            const cat=document.getElementById('catSelect').value,med=obtenerMedidas3D();
+            document.getElementById('catLabel3D').textContent=cat.toUpperCase();
+            document.getElementById('medLabel3D').textContent=formatearMedidas(cat,med);
+            clearMesh();currentMesh=crearGeometria(cat,med,acabadoActual);threeScene.add(currentMesh);
+            const box=new THREE.Box3().setFromObject(currentMesh),size=box.getSize(new THREE.Vector3()).length();
+            threeControls.target.copy(box.getCenter(new THREE.Vector3()));threeCamera.position.set(size*1.3,size*0.8,size*1.3);threeControls.update();
+        }
+        
+        function obtenerMedidas3D(){
+            const cat=document.getElementById('catSelect').value,m={};
+            if(cat==='Lámina'){m.largo=+document.getElementById('dimLargo')?.value||2.44;m.ancho=+document.getElementById('dimAncho')?.value||1.22;m.espesor=+document.getElementById('dimEspesor')?.value||0.003}
+            else if(cat==='PTR'){m.ladoA=+document.getElementById('dimLadoA')?.value||0.0508;m.ladoB=+document.getElementById('dimLadoB')?.value||0.0508;m.espesor=+document.getElementById('dimEspesor')?.value||0.0019;m.largo=+document.getElementById('dimLargo')?.value||6}
+            else if(cat==='Redondo'||cat==='Tubo Ligero'){m.diametro=+document.getElementById('dimDiametro')?.value||0.0483;m.espesor=+document.getElementById('dimEspesor')?.value||0.0012;m.largo=+document.getElementById('dimLargo')?.value||6}
+            else if(cat==='Varilla'){m.diametro=+document.getElementById('dimDiametro')?.value||0.0095;m.largo=+document.getElementById('dimLargo')?.value||12}
+            else if(cat==='Flecha'){m.diametro=+document.getElementById('dimDiametro')?.value||0.0127;m.largo=+document.getElementById('dimLargo')?.value||12}
+            else if(cat==='Angular'){m.alaA=+document.getElementById('dimAlaA')?.value||0.0254;m.alaB=+document.getElementById('dimAlaB')?.value||0.0254;m.espesor=+document.getElementById('dimEspesor')?.value||0.003175;m.largo=+document.getElementById('dimLargo')?.value||6}
+            else if(cat==='Electrodo'){m.diametro=+document.getElementById('dimDiametro')?.value||0.0032;m.largo=+document.getElementById('dimLargo')?.value||0.35}
+            return m;
+        }
+        
+        function formatearMedidas(cat,m){
+            if(cat==='Lámina')return`${m.largo?.toFixed(2)}m × ${m.ancho?.toFixed(2)}m × ${(m.espesor*1000)?.toFixed(1)}mm`;
+            if(cat==='PTR')return`${(m.ladoA*39.37)?.toFixed(1)}" × ${(m.ladoB*39.37)?.toFixed(1)}" × ${m.largo?.toFixed(1)}m`;
+            if(cat==='Redondo'||cat==='Tubo Ligero')return`Ø${(m.diametro*39.37)?.toFixed(1)}" × ${m.largo?.toFixed(1)}m | Esp:${(m.espesor*1000)?.toFixed(1)}mm`;
+            if(cat==='Varilla'||cat==='Flecha')return`Ø${(m.diametro*1000)?.toFixed(1)}mm × ${m.largo?.toFixed(1)}m`;
+            if(cat==='Angular')return`${(m.alaA*39.37)?.toFixed(1)}" × ${(m.alaB*39.37)?.toFixed(1)}" × ${m.largo?.toFixed(1)}m`;
+            if(cat==='Electrodo')return`Ø${(m.diametro*1000)?.toFixed(1)}mm × ${(m.largo*100)?.toFixed(0)}cm`;
+            return'';
+        }
+        
+        function renderDimensiones(){
+            const cat=document.getElementById('catSelect').value;let h='';
+            if(cat==='Lámina')h='<div class="form-group"><label>Largo (m)</label><input type="number" step="0.01" id="dimLargo" value="2.44" oninput="update3D()"></div><div class="form-group"><label>Ancho (m)</label><input type="number" step="0.01" id="dimAncho" value="1.22" oninput="update3D()"></div><div class="form-group"><label>Espesor (m)</label><input type="number" step="0.0001" id="dimEspesor" value="0.003" oninput="update3D()"></div>';
+            else if(cat==='PTR')h='<div class="dim-row"><div class="form-group"><label>Lado A</label><input type="number" step="0.001" id="dimLadoA" value="0.0508" oninput="update3D()"></div><div class="form-group"><label>Lado B</label><input type="number" step="0.001" id="dimLadoB" value="0.0508" oninput="update3D()"></div></div><div class="form-group"><label>Espesor</label><input type="number" step="0.0001" id="dimEspesor" value="0.0019" oninput="update3D()"></div><div class="form-group"><label>Largo</label><input type="number" step="0.1" id="dimLargo" value="6" oninput="update3D()"></div>';
+            else if(cat==='Redondo'||cat==='Tubo Ligero')h='<div class="form-group"><label>Diámetro (m)</label><input type="number" step="0.0001" id="dimDiametro" value="0.0483" oninput="update3D()"></div><div class="form-group"><label>Espesor (m)</label><input type="number" step="0.0001" id="dimEspesor" value="0.0012" oninput="update3D()"></div><div class="form-group"><label>Largo (m)</label><input type="number" step="0.1" id="dimLargo" value="6" oninput="update3D()"></div>';
+            else if(cat==='Varilla')h='<div class="form-group"><label>Diámetro (m)</label><input type="number" step="0.0001" id="dimDiametro" value="0.0095" oninput="update3D()"></div><div class="form-group"><label>Largo (m)</label><input type="number" step="0.1" id="dimLargo" value="12" oninput="update3D()"></div>';
+            else if(cat==='Flecha')h='<div class="form-group"><label>Diámetro (m)</label><input type="number" step="0.0001" id="dimDiametro" value="0.0127" oninput="update3D()"></div><div class="form-group"><label>Largo (m)</label><input type="number" step="0.1" id="dimLargo" value="12" oninput="update3D()"></div>';
+            else if(cat==='Angular')h='<div class="dim-row"><div class="form-group"><label>Ala A</label><input type="number" step="0.001" id="dimAlaA" value="0.0254" oninput="update3D()"></div><div class="form-group"><label>Ala B</label><input type="number" step="0.001" id="dimAlaB" value="0.0254" oninput="update3D()"></div></div><div class="form-group"><label>Espesor</label><input type="number" step="0.0001" id="dimEspesor" value="0.003175" oninput="update3D()"></div><div class="form-group"><label>Largo</label><input type="number" step="0.1" id="dimLargo" value="6" oninput="update3D()"></div>';
+            else if(cat==='Electrodo')h='<div class="form-group"><label>Diámetro (m)</label><input type="number" step="0.0001" id="dimDiametro" value="0.0032" oninput="update3D()"></div><div class="form-group"><label>Largo (m)</label><input type="number" step="0.01" id="dimLargo" value="0.35" oninput="update3D()"></div>';
+            document.getElementById('dimensionesContainer').innerHTML=h;
+        }
+        
+        function cambioCategoria(){renderDimensiones();update3D();}
+        
+        window.abrirModal3D=function(mat){
+            document.getElementById('modalMaterial').classList.add('active');if(!threeScene)initThree();
+            document.querySelectorAll('.acabado-btn').forEach(b=>{b.classList.remove('activo');b.onclick=()=>{document.querySelectorAll('.acabado-btn').forEach(x=>x.classList.remove('activo'));b.classList.add('activo');acabadoActual=b.dataset.acabado;update3D();};});
+            if(mat&&mat.id){
+                document.getElementById('modalTitle').textContent='✏️ Editar Material';
+                document.getElementById('catSelect').value=mat.categoria;document.getElementById('nombreInput').value=mat.nombre;
+                document.getElementById('cantidadInput').value=mat.cantidad;document.getElementById('unidadInput').value=mat.unidad;
+                document.getElementById('minInput').value=mat.min;document.getElementById('notasInput').value=mat.notas||'';
+                document.getElementById('editId').value=mat.id;acabadoActual=mat.acabado||'carbon';renderDimensiones();
+                setTimeout(()=>{document.querySelectorAll('.acabado-btn').forEach(b=>b.classList.toggle('activo',b.dataset.acabado===acabadoActual));if(mat.medidas)for(let k in mat.medidas){const el=document.getElementById('dim'+k.charAt(0).toUpperCase()+k.slice(1));if(el)el.value=mat.medidas[k];}update3D();},150);
+            }else{
+                document.getElementById('modalTitle').textContent='🆕 Nuevo Material';document.getElementById('catSelect').value='PTR';
+                document.getElementById('nombreInput').value='';document.getElementById('cantidadInput').value='0';
+                document.getElementById('unidadInput').value='pza';document.getElementById('minInput').value='5';
+                document.getElementById('notasInput').value='';document.getElementById('editId').value='';acabadoActual='inox';
+                renderDimensiones();setTimeout(()=>{document.querySelectorAll('.acabado-btn').forEach(b=>b.classList.toggle('activo',b.dataset.acabado==='inox'));update3D();},150);
+            }
+        };
+        window.closeModal3D=function(){document.getElementById('modalMaterial').classList.remove('active');clearMesh();};
+        window.cambioCategoria=cambioCategoria;window.update3D=update3D;
+        window.resetView=function(){if(threeCamera&&threeControls){threeControls.target.set(0,0.3,0);threeCamera.position.set(3,2,5);threeControls.update();}};
+        window.viewFront=function(){if(threeCamera&&threeControls){threeCamera.position.set(0,0.5,4);threeControls.target.set(0,0.3,0);threeControls.update();}};
+        window.viewTop=function(){if(threeCamera&&threeControls){threeCamera.position.set(0,4,0.01);threeControls.target.set(0,0.3,0);threeControls.update();}};
+        
+        window.guardarMaterial=function(){
+            const id=document.getElementById('editId').value,cat=document.getElementById('catSelect').value;
+            const nombre=document.getElementById('nombreInput').value.trim(),cantidad=parseInt(document.getElementById('cantidadInput').value)||0;
+            const unidad=document.getElementById('unidadInput').value.trim()||'pza',min=parseInt(document.getElementById('minInput').value)||5;
+            const notas=document.getElementById('notasInput').value.trim();
+            if(!nombre)return alert('⚠️ Nombre obligatorio');
+            const med=obtenerMedidas3D(),datos={categoria:cat,nombre,cantidad,unidad,min,acabado:acabadoActual,notas,medidas:med};
+            if(id){const idx=materiales.findIndex(m=>m.id==id);if(idx!==-1)materiales[idx]={...materiales[idx],...datos};}
+            else{const nid=Math.max(...materiales.map(m=>m.id),0)+1;materiales.push({id:nid,...datos});}
+            closeModal3D();renderDashboard();if(paginaActual==='inventario')renderInventario();
+        };
+        
+        // ==================== NAVEGACIÓN ====================
+        document.querySelectorAll('.nav-item').forEach(item=>{item.addEventListener('click',()=>{document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));item.classList.add('active');paginaActual=item.dataset.page;document.getElementById('pageTitle').textContent=paginaActual==='dashboard'?'📊 Dashboard':paginaActual==='inventario'?'📦 Inventario':'🤖 Asistente IA';document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+paginaActual).classList.add('active');if(paginaActual==='dashboard')renderDashboard();if(paginaActual==='inventario')renderInventario();});});
+        
+        // ==================== API KEY ====================
+        window.toggleConfig=function(){document.getElementById('configBar').classList.toggle('hidden');};
+        window.guardarKey=async function(){
+            const key=document.getElementById('apiKeyInput').value.trim();
+            if(!key?.startsWith('gsk_'))return alert('API Key inválida');
+            try{const r=await fetch('https://api.groq.com/openai/v1/models',{headers:{'Authorization':`Bearer ${key}`}});
+                if(r.ok){API_KEY=key;localStorage.setItem('hp_key_v3',key);document.getElementById('configBar').classList.add('hidden');document.getElementById('statusDot').className='status-dot on';document.getElementById('statusText').textContent='IA: Conectada';document.getElementById('btnAnalizar').disabled=false;}
+                else alert('Key incorrecta');}
+            catch(e){alert('Error de conexión');}
+        };
+        if(API_KEY){document.getElementById('statusDot').className='status-dot on';document.getElementById('statusText').textContent='IA: Conectada';document.getElementById('btnAnalizar').disabled=false;document.getElementById('apiKeyInput').value=API_KEY;}
+        
+        // ==================== DASHBOARD ====================
+        function renderDashboard(){
+            const total=materiales.length,bajo=materiales.filter(m=>m.cantidad<=m.min&&m.cantidad>0).length,agotado=materiales.filter(m=>m.cantidad===0).length;
+            const cats=[...new Set(materiales.map(m=>m.categoria))];
+            document.getElementById('statsGrid').innerHTML=`<div class="stat-card"><div class="num">${total}</div><div class="lbl">Total</div></div><div class="stat-card"><div class="num" style="color:#6ee7b7">${total-bajo-agotado}</div><div class="lbl">OK</div></div><div class="stat-card"><div class="num" style="color:#fdba74">${bajo}</div><div class="lbl">Bajo</div></div><div class="stat-card"><div class="num" style="color:#fca5a5">${agotado}</div><div class="lbl">Agotado</div></div>${cats.map(c=>`<div class="stat-card"><div class="num">${materiales.filter(m=>m.categoria===c).length}</div><div class="lbl">${c}</div></div>`).join('')}`;
+            const alerts=materiales.filter(m=>m.cantidad<=m.min);
+            document.getElementById('alertList').innerHTML=`<h3>⚠️ Alertas</h3>${alerts.length===0?'<p style="color:#888">✅ Todo en orden</p>':alerts.map(m=>`<div class="alert-item"><span>${m.nombre} (${m.cantidad} ${m.unidad})</span><span class="badge ${m.cantidad===0?'danger':'warn'}">${m.cantidad===0?'AGOTADO':'BAJO'}</span></div>`).join('')}`;
+        }
+        
+        // ==================== INVENTARIO ====================
+        function renderInventario(){
+            const s=document.getElementById('searchInv')?.value?.toLowerCase()||'',c=document.getElementById('filtroCat')?.value||'Todos';
+            const cats=['Todos',...new Set(materiales.map(m=>m.categoria))];
+            document.getElementById('filtroCat').innerHTML=cats.map(cat=>`<option ${c===cat?'selected':''}>${cat}</option>`).join('');
+            const filtrados=materiales.filter(m=>(c==='Todos'||m.categoria===c)&&m.nombre.toLowerCase().includes(s));
+            document.getElementById('tablaInventario').innerHTML=`<thead><tr><th>Material</th><th>Cat</th><th>Cant</th><th>Mín</th><th>Estado</th><th>3D</th><th>Edit</th></tr></thead><tbody>${filtrados.map(m=>`<tr><td><b>${m.nombre}</b>${m.notas?`<br><small style="color:#888">${m.notas}</small>`:''}</td><td>${m.categoria}</td><td>${m.cantidad} ${m.unidad}</td><td>${m.min}</td><td><span class="badge ${m.cantidad===0?'danger':m.cantidad<=m.min?'warn':'ok'}">${m.cantidad===0?'AGOTADO':m.cantidad<=m.min?'BAJO':'OK'}</span></td><td><button class="btn-outline btn-sm" style="font-size:1rem">🧊</button></td><td><button class="btn-outline btn-sm">✏️</button></td></tr>`).join('')}</tbody>`;
+            document.querySelectorAll('#tablaInventario tbody tr').forEach((row,i)=>{const m=filtrados[i],btns=row.querySelectorAll('button');btns[0].onclick=()=>window.abrirModal3D(m);btns[1].onclick=()=>editarCantidad(m.id);});
+        }
+        function editarCantidad(id){const m=materiales.find(m=>m.id===id);if(!m)return;const n=parseInt(prompt(`Cantidad de ${m.nombre}:`,m.cantidad));if(!isNaN(n)){m.cantidad=n;renderInventario();renderDashboard();}}
+        window.renderInventario=renderInventario;window.editarCantidad=editarCantidad;
+        
+        // ==================== CÁMARA ====================
+        document.getElementById('fileInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{imagenActual=ev.target.result;mostrarPreview(imagenActual);};r.readAsDataURL(f);});
+        window.abrirCamara=async function(){try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});const v=document.getElementById('cameraPreview');v.srcObject=stream;v.style.display='block';document.getElementById('previewImage').style.display='none';document.getElementById('camPlaceholder').style.display='none';document.getElementById('btnCapturar').style.display='inline-block';}catch(err){alert('No se pudo abrir cámara');}};
+        window.capturarFoto=function(){const v=document.getElementById('cameraPreview'),c=document.getElementById('photoCanvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);imagenActual=c.toDataURL('image/jpeg',0.8);mostrarPreview(imagenActual);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}document.getElementById('btnCapturar').style.display='none';};
+        function mostrarPreview(src){document.getElementById('previewImage').src=src;document.getElementById('previewImage').style.display='block';document.getElementById('cameraPreview').style.display='none';document.getElementById('camPlaceholder').style.display='none';document.getElementById('btnAnalizar').disabled=!API_KEY;}
+        
+        // ==================== IA CON GESTIÓN DE INVENTARIO ====================
+        window.analizarFoto=async function(){
+            if(!API_KEY||!imagenActual)return;
+            agregarMsg('user','📸 [Foto]');agregarMsg('sys','🔍 Analizando...');
+            const prompt=`Eres MAESTRO HERRERO. Analiza esta imagen. INVENTARIO:${materiales.map(m=>`${m.nombre}:${m.cantidad}${m.unidad}`).join('|')}`;
+            try{const r=await llamarIA(prompt,imagenActual);quitarCargando();agregarMsg('ai',r);}catch(e){quitarCargando();agregarMsg('sys','❌ '+e.message);}
+        };
+        
+        window.preguntar=async function(txt){
+            const inp=document.getElementById('preguntaInput');
+            const p=txt||inp.value.trim();
+            if(!p||!API_KEY)return;
+            agregarMsg('user',p);if(!txt)inp.value='';agregarMsg('sys','💭 Procesando...');
+            
+            const inventarioStr=materiales.map(m=>`ID:${m.id} | ${m.nombre} | ${m.categoria} | Stock:${m.cantidad} ${m.unidad} | Mín:${m.min}`).join('\n');
+            
+            const prompt=`Eres un ASISTENTE DE INVENTARIO de un taller de herrería. Tu trabajo es:
+1. Si el usuario dice que USÓ materiales → RESTA del inventario
+2. Si el usuario dice que AGREGÓ materiales → SUMA al inventario
+3. Si el usuario pregunta por STOCK → Consulta y responde
+4. Si es pregunta técnica → Responde normalmente
+
+INVENTARIO ACTUAL:
+${inventarioStr}
+
+MENSAJE DEL USUARIO: "${p}"
+
+INSTRUCCIONES:
+- Si es una operación de inventario (usar, agregar, quitar), responde SOLO en formato JSON:
+  {"accion":"usar","items":[{"id":1,"cantidad":3},{"id":3,"cantidad":2}],"respuesta":"Desconté 3 PTR 2×2 y 2 Láminas Negras"}
+  
+  {"accion":"agregar","items":[{"id":5,"cantidad":20}],"respuesta":"Agregué 20 Varillas 3/8"}
+  
+  {"accion":"pregunta","respuesta":"Tienes 45 PTR 2×2 en stock"}
+
+- Si detectas un material pero no coincide exactamente, busca el más parecido por nombre o categoría
+- Para "PTR 2×2" busca "PTR 2×2"
+- Para "varilla 3/8" busca "Varilla 3/8"
+- Para "lámina negra" busca "Lámina Negra"
+- Si no encuentras el material exacto, di que no lo encontraste
+
+- Si es pregunta técnica (machuelos, soldadura, etc.), responde normal sin JSON`;
+
+            try{
+                const resp=await llamarIA(prompt,null);
+                quitarCargando();
+                
+                // Intentar parsear JSON
+                try{
+                    const json=JSON.parse(resp);
+                    if(json.accion==='usar'||json.accion==='agregar'){
+                        let cambios=[];
+                        for(let item of json.items){
+                            const m=materiales.find(m=>m.id===item.id);
+                            if(m){
+                                if(json.accion==='usar')m.cantidad=Math.max(0,m.cantidad-item.cantidad);
+                                else m.cantidad+=item.cantidad;
+                                cambios.push(`${json.accion==='usar'?'➖':'➕'} ${m.nombre}: ${m.cantidad} ${m.unidad}`);
+                            }
+                        }
+                        agregarMsg('action',cambios.join('\n'));
+                        agregarMsg('ai',json.respuesta||'✅ Inventario actualizado');
+                        renderDashboard();
+                        if(paginaActual==='inventario')renderInventario();
+                    }else{
+                        agregarMsg('ai',json.respuesta||resp);
+                    }
+                }catch(e){
+                    // No es JSON, mostrar como respuesta normal
+                    agregarMsg('ai',resp);
+                    
+                    // También intentar detectar cambios simples en el texto
+                    detectarCambiosLocales(p);
+                }
+            }catch(e){
+                quitarCargando();
+                agregarMsg('sys','❌ '+e.message);
+                // Si falla la IA, intentar detección local
+                detectarCambiosLocales(p);
+            }
+        };
+        
+        function detectarCambiosLocales(texto){
+            const t=texto.toLowerCase();
+            let cambios=[];
+            
+            // Patrones comunes
+            const patrones=[
+                // "Usé X NOMBRE"
+                {regex:/us[ée]\s+(\d+)\s+(ptr\s*2\s*[x×]\s*2|ptr\s*1\s*[x×]\s*1|lamina\s+negra|varilla\s+3\/8|angular\s+1|electrodo\s+6013|flecha\s+1\/2|tubo\s+redondo\s+2|tubo\s+ligero)/i,accion:'usar'},
+                // "Quita X NOMBRE"  
+                {regex:/quita\s+(\d+)\s+(ptr\s*2\s*[x×]\s*2|ptr\s*1\s*[x×]\s*1|lamina\s+negra|varilla\s+3\/8|angular\s+1|electrodo\s+6013|flecha\s+1\/2|tubo\s+redondo\s+2|tubo\s+ligero)/i,accion:'usar'},
+                // "Agrega X NOMBRE"
+                {regex:/agrega\s+(\d+)\s+(ptr\s*2\s*[x×]\s*2|ptr\s*1\s*[x×]\s*1|lamina\s+negra|varilla\s+3\/8|angular\s+1|electrodo\s+6013|flecha\s+1\/2|tubo\s+redondo\s+2|tubo\s+ligero)/i,accion:'agregar'},
+            ];
+            
+            for(let p of patrones){
+                const match=texto.match(p.regex);
+                if(match){
+                    const cantidad=parseInt(match[1]);
+                    const nombreBuscar=match[2].toLowerCase();
+                    
+                    const encontrado=materiales.find(m=>
+                        m.nombre.toLowerCase().includes(nombreBuscar)||
+                        nombreBuscar.includes(m.nombre.toLowerCase().substring(0,10))
+                    );
+                    
+                    if(encontrado){
+                        if(p.accion==='usar')encontrado.cantidad=Math.max(0,encontrado.cantidad-cantidad);
+                        else encontrado.cantidad+=cantidad;
+                        cambios.push(`${p.accion==='usar'?'➖':'➕'} ${encontrado.nombre}: ${encontrado.cantidad} ${encontrado.unidad}`);
+                    }
+                    break;
+                }
+            }
+            
+            if(cambios.length>0){
+                agregarMsg('action',cambios.join('\n'));
+                renderDashboard();
+                if(paginaActual==='inventario')renderInventario();
+            }
+        }
+        
+        async function llamarIA(prompt,img){
+            const msgs=[];
+            if(img)msgs.push({role:"user",content:[{type:"text",text:prompt},{type:"image_url",image_url:{url:img}}]});
+            else msgs.push({role:"user",content:prompt});
+            const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({model:'meta-llama/llama-4-scout-17b-16e-instruct',messages:msgs,max_tokens:2000,temperature:0.3})});
+            if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'Error');}
+            const d=await r.json();return d.choices[0].message.content;
+        }
+        
+        function agregarMsg(tipo,txt){const c=document.getElementById('chatMessages'),d=document.createElement('div');d.className='msg '+tipo;d.innerHTML=txt;c.appendChild(d);d.scrollIntoView({behavior:'smooth'});}
+        function quitarCargando(){const msgs=document.getElementById('chatMessages').children;for(let m of msgs)if(m.textContent.includes('Procesando')||m.textContent.includes('Analizando')){m.remove();break;}}
+        
+        // ==================== VOZ ====================
+        window.toggleVoz=function(){
+            const btn=document.getElementById('btnVoice');
+            if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){
+                alert('Tu navegador no soporta voz. Usa Chrome.');
+                return;
+            }
+            
+            const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+            
+            if(!recognition){
+                recognition=new SpeechRecognition();
+                recognition.lang='es-MX';
+                recognition.continuous=false;
+                recognition.interimResults=false;
+                
+                recognition.onresult=(e)=>{
+                    const texto=e.results[0][0].transcript;
+                    document.getElementById('preguntaInput').value=texto;
+                    btn.classList.remove('listening');
+                    btn.textContent='🎤 Voz';
+                    escuchando=false;
+                    preguntar(texto);
+                };
+                
+                recognition.onerror=()=>{
+                    btn.classList.remove('listening');
+                    btn.textContent='🎤 Voz';
+                    escuchando=false;
+                };
+                
+                recognition.onend=()=>{
+                    btn.classList.remove('listening');
+                    btn.textContent='🎤 Voz';
+                    escuchando=false;
+                };
+            }
+            
+            if(escuchando){
+                recognition.stop();
+                btn.classList.remove('listening');
+                btn.textContent='🎤 Voz';
+                escuchando=false;
+            }else{
+                recognition.start();
+                btn.classList.add('listening');
+                btn.textContent='🔴 Escuchando...';
+                escuchando=true;
+            }
+        };
+        
+        renderDashboard();
+    </script>
+</body>
+</html>
