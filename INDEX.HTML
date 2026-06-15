@@ -72,7 +72,8 @@
         .btn:active{transform:scale(0.95)}
         .btn-outline{background:transparent;border:1px solid var(--orange);color:var(--orange);padding:0.4rem 0.7rem;border-radius:6px;cursor:pointer;font-size:0.7rem;min-height:30px}
         .btn-sm{padding:0.25rem 0.4rem;font-size:0.6rem;min-height:24px}
-        .btn-3d{background:#3b82f6;color:#fff;border:none;font-size:0.9rem;padding:0.2rem 0.4rem;border-radius:4px;cursor:pointer}
+        .btn-3d{background:#3b82f6;color:#fff;border:none;font-size:0.9rem;padding:0.2rem 0.5rem;border-radius:4px;cursor:pointer}
+        .btn-3d:active{background:#2563eb}
         
         .inv-header{display:flex;gap:0.3rem;margin-bottom:0.6rem;flex-wrap:wrap}
         .inv-header input{flex:1;padding:0.4rem;background:var(--card);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:0.8rem;min-width:100px}
@@ -96,7 +97,6 @@
         .chat-input{display:flex;gap:0.3rem;padding:0.4rem;border-top:1px solid var(--border);flex-shrink:0}
         .chat-input input{flex:1;padding:0.4rem;background:#0a0a0a;border:1px solid var(--border);border-radius:6px;color:#fff;font-size:0.8rem;min-width:0}
         
-        /* MODAL 3D */
         .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;height:100dvh;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;z-index:1000;visibility:hidden;opacity:0;transition:0.2s}
         .modal-overlay.active{visibility:visible;opacity:1}
         .modal-3d{background:var(--card);border:2px solid var(--border);border-radius:10px;width:95vw;height:85vh;height:85dvh;display:flex;flex-direction:column;overflow:hidden}
@@ -146,7 +146,6 @@
     </style>
 </head>
 <body>
-    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="logo">⚒️ HP</div>
         <div class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span><span>Dashboard</span></div>
@@ -214,7 +213,6 @@
         </div>
     </div>
     
-    <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
         <div class="bn-inner">
             <button class="bn-item active" data-page="dashboard"><span class="bn-icon">📊</span>Inicio</button>
@@ -223,7 +221,6 @@
         </div>
     </nav>
     
-    <!-- MODAL API -->
     <div class="modal-overlay" id="modalAPI">
         <div class="modal-small">
             <h3>🔑 API Key Groq</h3>
@@ -235,7 +232,6 @@
         </div>
     </div>
     
-    <!-- MODAL 3D -->
     <div class="modal-overlay" id="modal3D">
         <div class="modal-3d">
             <div class="modal-3d-body">
@@ -273,20 +269,17 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         
-        // ==================== FIREBASE ====================
-        const firebaseConfig = {
+        // FIREBASE
+        firebase.initializeApp({
             apiKey: "AIzaSyBHW_o1NoCXbypvN9OIYMF-wawd9DXjKWA",
             authDomain: "lolp-d56ae.firebaseapp.com",
             projectId: "lolp-d56ae",
             storageBucket: "lolp-d56ae.firebasestorage.app",
             messagingSenderId: "953758856480",
             appId: "1:953758856480:web:8a08fe15b7e3dd4b27d345"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
+        });
         const db = firebase.firestore();
         
-        // ==================== ESTADO ====================
         let materiales = [];
         let API_KEY = localStorage.getItem('hp_grok_key') || '';
         let imagenActual = null, stream = null, paginaActual = 'dashboard';
@@ -306,32 +299,22 @@
             threeRenderer.setSize(c.clientWidth, c.clientHeight);
             threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             c.appendChild(threeRenderer.domElement);
-            
             threeControls = new OrbitControls(threeCamera, threeRenderer.domElement);
             threeControls.enableDamping = true;
             threeControls.dampingFactor = 0.08;
             threeControls.target.set(0, 0.3, 0);
             threeControls.touches = {ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN};
-            
             threeScene.add(new THREE.AmbientLight(0xffffff, 0.8));
             const k = new THREE.DirectionalLight(0xffffff, 1.2);
             k.position.set(3, 6, 3);
             threeScene.add(k);
-            
-            const floor = new THREE.Mesh(
-                new THREE.PlaneGeometry(15, 15),
-                new THREE.MeshStandardMaterial({color: 0xc8c0b0, roughness: 0.8})
-            );
-            floor.rotation.x = -Math.PI/2;
-            floor.position.y = -1;
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(15, 15), new THREE.MeshStandardMaterial({color: 0xc8c0b0, roughness: 0.8}));
+            floor.rotation.x = -Math.PI/2; floor.position.y = -1;
             threeScene.add(floor);
-            
             const grid = new THREE.GridHelper(6, 20, 0x999999, 0xcccccc);
             grid.position.y = -0.99;
             threeScene.add(grid);
-            
             animate3D();
-            
             new ResizeObserver(() => {
                 if(threeCamera && threeRenderer) {
                     threeCamera.aspect = c.clientWidth / c.clientHeight;
@@ -341,34 +324,21 @@
             }).observe(c);
         }
         
-        function animate3D() {
-            requestAnimationFrame(animate3D);
-            if(threeControls) threeControls.update();
-            if(threeRenderer && threeScene && threeCamera) threeRenderer.render(threeScene, threeCamera);
-        }
+        function animate3D() { requestAnimationFrame(animate3D); if(threeControls) threeControls.update(); if(threeRenderer && threeScene && threeCamera) threeRenderer.render(threeScene, threeCamera); }
+        function clearMesh() { if(currentMesh) { threeScene.remove(currentMesh); currentMesh.geometry?.dispose(); currentMesh.material?.dispose?.(); currentMesh = null; } }
         
-        function clearMesh() {
-            if(currentMesh) {
-                threeScene.remove(currentMesh);
-                currentMesh.geometry?.dispose();
-                currentMesh.material?.dispose?.();
-                currentMesh = null;
-            }
-        }
-        
-        function getMaterial3D(acabado) {
-            const mats = {
+        function getMaterial3D(a) {
+            const m = {
                 inox: new THREE.MeshStandardMaterial({color: 0xd0d0d8, roughness: 0.25, metalness: 0.95}),
                 galvanizado: new THREE.MeshStandardMaterial({color: 0xb8bcc0, roughness: 0.35, metalness: 0.8}),
                 negro: new THREE.MeshStandardMaterial({color: 0x3a3a3a, roughness: 0.5, metalness: 0.6}),
                 carbon: new THREE.MeshStandardMaterial({color: 0x6a6a6a, roughness: 0.55, metalness: 0.5})
             };
-            return mats[acabado] || mats.carbon;
+            return m[a] || m.carbon;
         }
         
         function crearGeometria(cat, med, acabado) {
-            const mat = getMaterial3D(acabado);
-            let geo;
+            const mat = getMaterial3D(acabado); let geo;
             switch(cat) {
                 case 'Lámina': geo = new THREE.BoxGeometry(med.espesor||0.003, med.largo||2.44, med.ancho||1.22); break;
                 case 'PTR': geo = new THREE.BoxGeometry(med.ladoA||0.05, med.ladoB||0.05, med.largo||6); break;
@@ -430,8 +400,7 @@
         }
         
         function renderDimensiones3D() {
-            const cat = document.getElementById('cat3D')?.value || 'PTR';
-            let h = '';
+            const cat = document.getElementById('cat3D')?.value || 'PTR'; let h = '';
             if(cat === 'Lámina') h = '<div class="form-group"><label>Largo (m)</label><input id="m_largo" value="2.44" oninput="update3D()"></div><div class="form-group"><label>Ancho (m)</label><input id="m_ancho" value="1.22" oninput="update3D()"></div><div class="form-group"><label>Espesor (m)</label><input id="m_espesor" value="0.003" oninput="update3D()"></div>';
             else if(cat === 'PTR') h = '<div class="form-row"><div class="form-group"><label>Lado A</label><input id="m_ladoA" value="0.0508" oninput="update3D()"></div><div class="form-group"><label>Lado B</label><input id="m_ladoB" value="0.0508" oninput="update3D()"></div></div><div class="form-group"><label>Espesor</label><input id="m_espesor" value="0.0019" oninput="update3D()"></div><div class="form-group"><label>Largo</label><input id="m_largo" value="6" oninput="update3D()"></div>';
             else if(cat === 'Redondo' || cat === 'Tubo Ligero') h = '<div class="form-group"><label>Diámetro (m)</label><input id="m_diametro" value="0.0483" oninput="update3D()"></div><div class="form-group"><label>Espesor (m)</label><input id="m_espesor" value="0.0012" oninput="update3D()"></div><div class="form-group"><label>Largo (m)</label><input id="m_largo" value="6" oninput="update3D()"></div>';
@@ -444,22 +413,22 @@
         
         function cambioCat3D() { renderDimensiones3D(); update3D(); }
         
-        // ==================== FUNCIONES 3D GLOBALES ====================
+        // ==================== FUNCIONES GLOBALES 3D ====================
         window.abrirModal3D = function(mat) {
             document.getElementById('modal3D').classList.add('active');
             if(!threeScene) setTimeout(initThree, 100);
             
-            document.querySelectorAll('.acabado-btn').forEach(b => {
+            document.querySelectorAll('#modal3D .acabado-btn').forEach(b => {
                 b.classList.remove('activo');
                 b.onclick = () => {
-                    document.querySelectorAll('.acabado-btn').forEach(x => x.classList.remove('activo'));
+                    document.querySelectorAll('#modal3D .acabado-btn').forEach(x => x.classList.remove('activo'));
                     b.classList.add('activo');
                     acabado3D = b.dataset.acabado;
                     update3D();
                 };
             });
             
-            if(mat) {
+            if(mat && (mat.idFirestore || mat.id)) {
                 document.getElementById('modal3DTitle').textContent = '✏️ Editar';
                 document.getElementById('cat3D').value = mat.categoria || 'PTR';
                 document.getElementById('nombre3D').value = mat.nombre || '';
@@ -471,7 +440,7 @@
                 acabado3D = mat.acabado || 'inox';
                 renderDimensiones3D();
                 setTimeout(() => {
-                    document.querySelectorAll('.acabado-btn').forEach(b => b.classList.toggle('activo', b.dataset.acabado === acabado3D));
+                    document.querySelectorAll('#modal3D .acabado-btn').forEach(b => b.classList.toggle('activo', b.dataset.acabado === acabado3D));
                     if(mat.medidas) {
                         for(let k in mat.medidas) {
                             const el = document.getElementById('m_' + k);
@@ -492,7 +461,7 @@
                 acabado3D = 'inox';
                 renderDimensiones3D();
                 setTimeout(() => {
-                    document.querySelectorAll('.acabado-btn').forEach(b => b.classList.toggle('activo', b.dataset.acabado === 'inox'));
+                    document.querySelectorAll('#modal3D .acabado-btn').forEach(b => b.classList.toggle('activo', b.dataset.acabado === 'inox'));
                     update3D();
                 }, 200);
             }
@@ -515,74 +484,37 @@
                 notas: document.getElementById('notas3D').value.trim(),
                 medidas: obtenerMedidas3D()
             };
-            
             if(!datos.nombre) return alert('⚠️ Nombre obligatorio');
-            
             if(id) {
-                const idx = materiales.findIndex(m => m.idFirestore === id);
-                if(idx !== -1) {
-                    materiales[idx] = {...materiales[idx], ...datos};
-                    await db.collection('materiales').doc(id).update(datos);
-                }
+                await db.collection('materiales').doc(id).update(datos);
             } else {
                 await db.collection('materiales').add(datos);
             }
-            
             window.cerrarModal3D();
-            renderDashboard();
-            if(paginaActual === 'inventario') renderInventario();
         };
         
-        window.resetView3D = function() {
-            if(threeControls) { threeControls.target.set(0, 0.3, 0); threeCamera.position.set(2.5, 1.8, 4); threeControls.update(); }
-        };
-        window.frontView3D = function() {
-            if(threeControls) { threeCamera.position.set(0, 0.5, 3); threeControls.target.set(0, 0.3, 0); threeControls.update(); }
-        };
-        window.topView3D = function() {
-            if(threeControls) { threeCamera.position.set(0, 3, 0.01); threeControls.target.set(0, 0.3, 0); threeControls.update(); }
-        };
-        
+        window.resetView3D = function() { if(threeControls) { threeControls.target.set(0, 0.3, 0); threeCamera.position.set(2.5, 1.8, 4); threeControls.update(); } };
+        window.frontView3D = function() { if(threeControls) { threeCamera.position.set(0, 0.5, 3); threeControls.target.set(0, 0.3, 0); threeControls.update(); } };
+        window.topView3D = function() { if(threeControls) { threeCamera.position.set(0, 3, 0.01); threeControls.target.set(0, 0.3, 0); threeControls.update(); } };
         window.cambioCat3D = cambioCat3D;
         window.update3D = update3D;
         
         // ==================== SINCRONIZACIÓN ====================
         let escuchando = false;
-        
         function iniciarSync() {
             if(escuchando) return;
             escuchando = true;
             document.getElementById('syncDot').className = 'dot sync';
-            
             db.collection('materiales').onSnapshot(snap => {
                 materiales = [];
-                snap.forEach(doc => {
-                    materiales.push({idFirestore: doc.id, ...doc.data()});
-                });
+                snap.forEach(doc => { materiales.push({idFirestore: doc.id, ...doc.data()}); });
                 document.getElementById('syncDot').className = 'dot on';
                 renderDashboard();
                 if(paginaActual === 'inventario') renderInventario();
             }, err => {
                 console.error(err);
                 document.getElementById('syncDot').className = 'dot off';
-                if(materiales.length === 0) cargarIniciales();
             });
-        }
-        
-        async function cargarIniciales() {
-            const iniciales = [
-                {categoria:'PTR',nombre:'PTR 2×2 cal 14',cantidad:45,unidad:'pza',min:10,acabado:'inox',notas:'',medidas:{ladoA:0.0508,ladoB:0.0508,espesor:0.0019,largo:6}},
-                {categoria:'Redondo',nombre:'Tubo Redondo 2" céd 40',cantidad:25,unidad:'pza',min:10,acabado:'carbon',notas:'Céd 40',medidas:{diametro:0.0603,espesor:0.00391,largo:6}},
-                {categoria:'Lámina',nombre:'Lámina Negra 3mm',cantidad:12,unidad:'hoja',min:5,acabado:'carbon',notas:'',medidas:{largo:2.44,ancho:1.22,espesor:0.003}},
-                {categoria:'Flecha',nombre:'Flecha 1/2"',cantidad:80,unidad:'pza',min:30,acabado:'negro',notas:'',medidas:{diametro:0.0127,largo:12}},
-                {categoria:'Varilla',nombre:'Varilla 3/8 Inox',cantidad:60,unidad:'pza',min:20,acabado:'inox',notas:'',medidas:{diametro:0.0095,largo:12}},
-                {categoria:'Angular',nombre:'Angular 1"×1/8',cantidad:0,unidad:'pza',min:10,acabado:'carbon',notas:'',medidas:{alaA:0.0254,alaB:0.0254,espesor:0.003175,largo:6}},
-                {categoria:'Electrodo',nombre:'Electrodo 6013 1/8',cantidad:200,unidad:'pza',min:50,acabado:'carbon',notas:'',medidas:{diametro:0.0032,largo:0.35}},
-                {categoria:'Tubo Ligero',nombre:'Tubo Redondo 1 1/2" ligero',cantidad:50,unidad:'pza',min:20,acabado:'negro',notas:'Cal 18',medidas:{diametro:0.0483,espesor:0.0012,largo:6}},
-            ];
-            for(let m of iniciales) {
-                await db.collection('materiales').add(m);
-            }
         }
         
         // ==================== NAVEGACIÓN ====================
@@ -607,33 +539,25 @@
         function guardarAPIKey() {
             const k = document.getElementById('apiKeyInput').value.trim();
             if(k && !k.startsWith('gsk_')) return alert('Key inválida');
-            API_KEY = k;
-            localStorage.setItem('hp_grok_key', k);
-            cerrarModalAPI();
+            API_KEY = k; localStorage.setItem('hp_grok_key', k); cerrarModalAPI();
         }
-        
-        window.abrirModalAPI = abrirModalAPI;
-        window.cerrarModalAPI = cerrarModalAPI;
-        window.guardarAPIKey = guardarAPIKey;
+        window.abrirModalAPI = abrirModalAPI; window.cerrarModalAPI = cerrarModalAPI; window.guardarAPIKey = guardarAPIKey;
         
         // ==================== DASHBOARD ====================
         function renderDashboard() {
             if(materiales.length === 0) {
                 document.getElementById('statsGrid').innerHTML = '<div class="stat-card"><div class="num">☁️</div><div class="lbl">Sincronizando...</div></div>';
-                document.getElementById('alertList').innerHTML = '<h3>⚠️ Alertas</h3><p style="color:#888">Conectando con la nube...</p>';
                 return;
             }
             const total = materiales.length;
             const bajo = materiales.filter(m => m.cantidad <= m.min && m.cantidad > 0).length;
             const agotado = materiales.filter(m => m.cantidad === 0).length;
-            
             document.getElementById('statsGrid').innerHTML = `
                 <div class="stat-card"><div class="num">${total}</div><div class="lbl">Total ☁️</div></div>
                 <div class="stat-card"><div class="num" style="color:#6ee7b7">${total-bajo-agotado}</div><div class="lbl">OK</div></div>
                 <div class="stat-card"><div class="num" style="color:#fdba74">${bajo}</div><div class="lbl">Bajo</div></div>
                 <div class="stat-card"><div class="num" style="color:#fca5a5">${agotado}</div><div class="lbl">Agotado</div></div>
             `;
-            
             const alerts = materiales.filter(m => m.cantidad <= m.min);
             document.getElementById('alertList').innerHTML = `
                 <h3>⚠️ Alertas</h3>
@@ -642,7 +566,7 @@
             `;
         }
         
-        // ==================== INVENTARIO ====================
+        // ==================== INVENTARIO (CORREGIDO) ====================
         function renderInventario() {
             if(materiales.length === 0) {
                 document.getElementById('tablaInventario').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem">☁️ Sincronizando...</td></tr>';
@@ -663,19 +587,35 @@
                         <td>${m.categoria}</td>
                         <td>${m.cantidad} ${m.unidad}</td>
                         <td><span class="badge ${m.cantidad===0?'danger':m.cantidad<=m.min?'warn':'ok'}">${m.cantidad===0?'AGOTADO':m.cantidad<=m.min?'BAJO':'OK'}</span></td>
-                        <td><button class="btn-3d" onclick="window.abrirModal3D(materiales.find(x=>x.idFirestore==='${m.idFirestore}'))">🧊</button></td>
-                        <td><button class="btn-outline btn-sm" onclick="window.abrirModal3D(materiales.find(x=>x.idFirestore==='${m.idFirestore}'))">✏️</button></td>
+                        <td><button class="btn-3d ver3d-btn" data-id="${m.idFirestore}">🧊</button></td>
+                        <td><button class="btn-outline btn-sm editar-btn" data-id="${m.idFirestore}">✏️</button></td>
                     </tr>
                 `).join('')}</tbody>
             `;
+            
+            // ASIGNAR EVENTOS A LOS BOTONES
+            document.querySelectorAll('.ver3d-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const id = this.getAttribute('data-id');
+                    const mat = materiales.find(m => m.idFirestore === id);
+                    if(mat) window.abrirModal3D(mat);
+                };
+            });
+            
+            document.querySelectorAll('.editar-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const id = this.getAttribute('data-id');
+                    const mat = materiales.find(m => m.idFirestore === id);
+                    if(mat) window.abrirModal3D(mat);
+                };
+            });
         }
         
         window.renderInventario = renderInventario;
         
         // ==================== CÁMARA ====================
         document.getElementById('fileInput').addEventListener('change', e => {
-            const f = e.target.files[0];
-            if(!f) return;
+            const f = e.target.files[0]; if(!f) return;
             const r = new FileReader();
             r.onload = ev => { imagenActual = ev.target.result; mostrarPreview(imagenActual); };
             r.readAsDataURL(f);
@@ -710,17 +650,14 @@
             document.getElementById('camPlaceholder').style.display = 'none';
         }
         
-        window.abrirCamara = abrirCamara;
-        window.capturarFoto = capturarFoto;
+        window.abrirCamara = abrirCamara; window.capturarFoto = capturarFoto;
         
         // ==================== IA ====================
         async function analizarFoto() {
             if(!API_KEY || !imagenActual) return;
             agregarMsg('user','📸 [Foto]'); agregarMsg('sys','🔍...');
-            try {
-                const r = await llamarIA('Eres MAESTRO HERRERO. Analiza esta imagen.', imagenActual);
-                quitarCargando(); agregarMsg('ai', r);
-            } catch(e) { quitarCargando(); agregarMsg('sys','❌'); }
+            try { const r = await llamarIA('Eres MAESTRO HERRERO. Analiza esta imagen.', imagenActual); quitarCargando(); agregarMsg('ai', r); }
+            catch(e) { quitarCargando(); agregarMsg('sys','❌'); }
         }
         
         async function preguntar(txt) {
@@ -728,13 +665,10 @@
             const p = txt || inp.value.trim();
             if(!p || !API_KEY) return;
             agregarMsg('user', p); if(!txt) inp.value = ''; agregarMsg('sys','💭...');
-            
             const invStr = materiales.map(m => `ID:${m.idFirestore}|${m.nombre}|Stock:${m.cantidad}`).join('\n');
-            const prompt = `Eres ASISTENTE DE INVENTARIO. Si es operación de stock, responde JSON: {"accion":"usar","items":[{"id":"FIRESTORE_ID","cantidad":3}],"respuesta":"OK"} o {"accion":"pregunta","respuesta":"..."}. INVENTARIO:\n${invStr}\n\nUSUARIO: "${p}"`;
-            
+            const prompt = `Eres ASISTENTE DE INVENTARIO. Si es operación de stock, responde JSON: {"accion":"usar","items":[{"id":"FIRESTORE_ID","cantidad":3}],"respuesta":"OK"}. INVENTARIO:\n${invStr}\n\nUSUARIO: "${p}"`;
             try {
-                const resp = await llamarIA(prompt, null);
-                quitarCargando();
+                const resp = await llamarIA(prompt, null); quitarCargando();
                 try {
                     const json = JSON.parse(resp);
                     if(json.accion === 'usar' || json.accion === 'agregar') {
@@ -766,16 +700,14 @@
         
         function agregarMsg(tipo, txt) {
             const c = document.getElementById('chatMessages'), d = document.createElement('div');
-            d.className = 'msg ' + tipo; d.innerHTML = txt;
-            c.appendChild(d); d.scrollIntoView({behavior:'smooth'});
+            d.className = 'msg ' + tipo; d.innerHTML = txt; c.appendChild(d); d.scrollIntoView({behavior:'smooth'});
         }
         function quitarCargando() {
             const msgs = document.getElementById('chatMessages').children;
             for(let m of msgs) if(m.textContent.includes('💭')||m.textContent.includes('🔍')) { m.remove(); break; }
         }
         
-        window.preguntar = preguntar;
-        window.analizarFoto = analizarFoto;
+        window.preguntar = preguntar; window.analizarFoto = analizarFoto;
         
         // ==================== INICIAR ====================
         iniciarSync();
